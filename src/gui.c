@@ -1,8 +1,8 @@
 #include "common.h"
+#include "config.h"
+
 #include <ctype.h>
 #include <stdio.h>
-
-#include "config.h"
 
 #if defined(HAVE_CURSES_H)
 #include <curses.h>
@@ -12,9 +12,7 @@
 #include <ncurses/ncurses.h>
 #endif
 
-
-void xinitscr()
-{
+void xinitscr() {
     initscr();
     raw();
     noecho();
@@ -22,19 +20,17 @@ void xinitscr()
     //curs_set(0);
 }
 
-void xendwin()
-{
+void xendwin() {
     keypad(stdscr, FALSE);
     noraw();
     endwin();
 }
 
-void xstart_color()
-{
+void xstart_color() {
     int background = -1;
 
-    if(has_colors()) {
-        if(start_color() == OK) {
+    if (has_colors()) {
+        if (start_color() == OK) {
             use_default_colors();
 
             init_pair(1, COLOR_WHITE, background);
@@ -46,55 +42,47 @@ void xstart_color()
             init_pair(7, COLOR_RED, background);
 
             setenv("HAS_COLOR", "1", 1);
-        }
-        else {
+        } else {
             setenv("HAS_COLOR", "0", 1);
         }
-    }
-    else {
+    } else {
         setenv("HAS_COLOR", "0", 1);
     }
 }
 
-int xgetch(int* meta)
-{
+int xgetch(int *meta) {
     int key = getch();
 
-    if(key == 27) {
+    if (key == 27) {
         key = getch();
 
         *meta = 1;
         return key;
-    }
-    else {
-        if(key >= kKeyMetaFirst
-            && key <= kKeyMetaFirst + 127) 
-        {
+    } else {
+        if (key >= kKeyMetaFirst && key <= kKeyMetaFirst + 127) {
             *meta = 1;
             return key - kKeyMetaFirst;
-        }
-        else {
+        } else {
             *meta = 0;
             return key;
         }
     }
 }
 
-void xgetch_utf8(int* meta, ALLOC int** key, int* key_size)
-{
+void xgetch_utf8(int *meta, ALLOC int **key, int *key_size) {
     fd_set mask;
     fd_set read_ok;
 
     FD_ZERO(&mask);
     FD_SET(0, &mask);
 
-    *key = MALLOC(sizeof(int)*128);
+    *key = MALLOC(sizeof(int) * 128);
     *key_size = 0;
     int key_alloc_size = 128;
 
     BOOL input_started = FALSE;
 
-    while(1) {
+    while (1) {
         read_ok = mask;
 
         struct timeval tv;
@@ -103,12 +91,12 @@ void xgetch_utf8(int* meta, ALLOC int** key, int* key_size)
 
         select(5, &read_ok, NULL, NULL, &tv);
 
-        if(FD_ISSET(0, &read_ok)) {
+        if (FD_ISSET(0, &read_ok)) {
             input_started = TRUE;
 
             int k = getch();
 
-            if(k == 27) {
+            if (k == 27) {
                 k = getch();
 
                 *meta = 1;
@@ -117,24 +105,21 @@ void xgetch_utf8(int* meta, ALLOC int** key, int* key_size)
                 *key_size = 1;
 
                 return;
-            }
-            else if(k >= KEY_MIN && k <= KEY_MAX) { // curses key
+            } else if (k >= KEY_MIN && k <= KEY_MAX) { // curses key
                 *meta = 0;
                 (*key)[0] = k;
                 (*key)[1] = 0;
                 *key_size = 1;
 
                 return;
-            }
-            else if(k >= 128) { // utf8 characters
-                if(*key_size >= key_alloc_size) {
+            } else if (k >= 128) { // utf8 characters
+                if (*key_size >= key_alloc_size) {
                     key_alloc_size *= 2;
-                    *key = REALLOC(*key, sizeof(int)*key_alloc_size);
+                    *key = REALLOC(*key, sizeof(int) * key_alloc_size);
                 }
                 (*key)[(*key_size)++] = k;
                 (*key)[*key_size] = 0;
-            }
-            else {
+            } else {
                 *meta = 0;
                 (*key)[0] = k;
                 (*key)[1] = 0;
@@ -142,9 +127,8 @@ void xgetch_utf8(int* meta, ALLOC int** key, int* key_size)
 
                 return;
             }
-        }
-        else {
-            if(input_started) {
+        } else {
+            if (input_started) {
                 *meta = 0;
                 return;
             }
@@ -155,8 +139,7 @@ void xgetch_utf8(int* meta, ALLOC int** key, int* key_size)
 ///////////////////////////////////////////////////
 // error message
 ///////////////////////////////////////////////////
-void merr_msg(char* msg, ...)
-{
+void merr_msg(char *msg, ...) {
     BOOL raw_mode = mis_raw_mode();
 
     char msg2[1024];
@@ -165,26 +148,25 @@ void merr_msg(char* msg, ...)
     vsnprintf(msg2, 1024, msg, args);
     va_end(args);
 
-    if(raw_mode) {
+    if (raw_mode) {
         const int maxy = mgetmaxy();
         const int maxx = mgetmaxx();
 
         xclear();
         view();
-        mclear_online(maxy-2);
+        mclear_online(maxy - 2);
         mclear_lastline();
-        mvprintw(maxy-2, 0, "%s", msg2);
+        mvprintw(maxy - 2, 0, "%s", msg2);
         refresh();
 
         (void)getch();
 
 #if defined(__CYGWIN__)
-        xclear_immediately();       // 画面の再描写
+        xclear_immediately(); // 画面の再描写
         view();
         refresh();
 #endif
-    }
-    else {
+    } else {
         fprintf(stderr, "%s", msg2);
     }
 }
@@ -192,8 +174,7 @@ void merr_msg(char* msg, ...)
 ///////////////////////////////////////////////////
 // error message with nonstop
 ///////////////////////////////////////////////////
-void msg_nonstop(char* msg, ...)
-{
+void msg_nonstop(char *msg, ...) {
     BOOL raw_mode = mis_raw_mode();
 
     char msg2[1024];
@@ -203,18 +184,17 @@ void msg_nonstop(char* msg, ...)
     vsnprintf(msg2, 1024, msg, args);
     va_end(args);
 
-    if(raw_mode) {
+    if (raw_mode) {
         const int maxy = mgetmaxy();
         const int maxx = mgetmaxx();
 
         xclear();
         view();
-        mclear_online(maxy-2);
+        mclear_online(maxy - 2);
         mclear_lastline();
-        mvprintw(maxy-2, 0, "%s", msg2);
+        mvprintw(maxy - 2, 0, "%s", msg2);
         refresh();
-    }
-    else {
+    } else {
         fprintf(stderr, "%s", msg2);
     }
 }
@@ -222,34 +202,32 @@ void msg_nonstop(char* msg, ...)
 ///////////////////////////////////////////////////
 // choice
 ///////////////////////////////////////////////////
-char* choice(char* msg, char* str[], int len, int cancel)
-{
+char *choice(char *msg, char *str[], int len, int cancel) {
     const int maxy = mgetmaxy();
     const int maxx = mgetmaxx();
 
     int cursor = 0;
-    
-    while(1) {
+
+    while (1) {
         /// view ///
         clear();
         view();
 
-        mclear_online(maxy-2);
+        mclear_online(maxy - 2);
         mclear_lastline();
 
-        move(maxy-2, 0);
+        move(maxy - 2, 0);
         printw("%s", msg);
-        
+
         printw(" ");
         int i;
-        for(i=0; i< len; i++) {
-            if(cursor == i) {
+        for (i = 0; i < len; i++) {
+            if (cursor == i) {
                 attron(A_REVERSE);
                 printw("%s", str[i]);
                 attroff(A_REVERSE);
                 printw(" ");
-            }
-            else {
+            } else {
                 printw("%s ", str[i]);
             }
         }
@@ -258,29 +236,24 @@ char* choice(char* msg, char* str[], int len, int cancel)
         /// input ///
         int meta;
         int key = xgetch(&meta);
-        if(key == 10 || key == 13) {
+        if (key == 10 || key == 13) {
             break;
-        }
-        else if(key == 6 || key == KEY_RIGHT) {
+        } else if (key == 6 || key == KEY_RIGHT) {
             cursor++;
 
-            if(cursor >= len) cursor = len-1;
-        }
-        else if(key == 2 || key == KEY_LEFT) {
+            if (cursor >= len) cursor = len - 1;
+        } else if (key == 2 || key == KEY_LEFT) {
             cursor--;
 
-            if(cursor < 0) cursor= 0;
-        }
-        else if(key == 12) {            // CTRL-L
+            if (cursor < 0) cursor = 0;
+        } else if (key == 12) { // CTRL-L
             xclear_immediately();
-        }
-        else if(key == 3 || key == 7 || key == 27) { // CTRL-C -G Escape
+        } else if (key == 3 || key == 7 || key == 27) { // CTRL-C -G Escape
             return NULL;
-        }
-        else {
+        } else {
             int i;
-            for(i=0; i< len; i++) {
-                if(toupper(key) == toupper(str[i][0])) {
+            for (i = 0; i < len; i++) {
+                if (toupper(key) == toupper(str[i][0])) {
                     cursor = i;
                     goto finished;
                 }
@@ -290,7 +263,7 @@ char* choice(char* msg, char* str[], int len, int cancel)
 finished:
 
 #if defined(__CYGWIN__)
-    xclear_immediately();       // 画面の再描写
+    xclear_immediately(); // 画面の再描写
     view();
     refresh();
 #endif
@@ -302,53 +275,50 @@ finished:
 // input box
 ///////////////////////////////////////////////////////////////////
 // result 0: ok 1: cancel
-static void input_box_cursor_move(sObject* input, int* cursor, int v)
-{
-    char* str = string_c_str(input);
+static void input_box_cursor_move(sObject *input, int *cursor, int v) {
+    char *str = string_c_str(input);
     int utfpos = str_pointer2kanjipos(gKanjiCode, str, str + *cursor);
-    utfpos+=v;
+    utfpos += v;
     *cursor = str_kanjipos2pointer(gKanjiCode, str, utfpos) - str;
 }
 
-char* gInputBoxMsg;
-sObject* gInputBoxInput = NULL;
+char *gInputBoxMsg;
+sObject *gInputBoxInput = NULL;
 int gInputBoxCursor;
-    
-void input_box_view()
-{
+
+void input_box_view() {
     int maxx = mgetmaxx();
     int maxy = mgetmaxy();
 
     /// view ///
-    mclear_online(maxy-2);
+    mclear_online(maxy - 2);
     mclear_lastline();
-    
-    mvprintw(maxy-2, 0, "%s", gInputBoxMsg);
-    
-    move(maxy-1, 0);
-    
+
+    mvprintw(maxy - 2, 0, "%s", gInputBoxMsg);
+
+    move(maxy - 1, 0);
+
     const int len = string_length(gInputBoxInput);
     int i;
-    for(i=0; i< len && i<maxx-1; i++) {
+    for (i = 0; i < len && i < maxx - 1; i++) {
         printw("%c", string_c_str(gInputBoxInput)[i]);
     }
 
     //move_immediately(maxy -1, gInputBoxCursor);
-    move(maxy -1, gInputBoxCursor);
+    move(maxy - 1, gInputBoxCursor);
 }
 
-int input_box(char* msg, char* result, int result_size, char* def_input, int def_cursor)
-{
+int input_box(char *msg, char *result, int result_size, char *def_input, int def_cursor) {
     gInputBoxMsg = msg;
-    
+
     int result2 = 0;
     gInputBoxCursor = def_cursor;
 
     string_put(gInputBoxInput, def_input);
-    
+
     gView = input_box_view;
-    
-    while(1) {
+
+    while (1) {
         xclear();
         view();
         //input_box_view();
@@ -357,131 +327,115 @@ int input_box(char* msg, char* result, int result_size, char* def_input, int def
         /// input ///
         int meta;
         int key = xgetch(&meta);
-        
-        if(key == 10 || key == 13) {
+
+        if (key == 10 || key == 13) {
             result2 = 0;
             break;
-        }
-        else if(key == 6 || key == KEY_RIGHT) {
+        } else if (key == 6 || key == KEY_RIGHT) {
             input_box_cursor_move(gInputBoxInput, &gInputBoxCursor, 1);
-        }
-        else if(key == 2 || key == KEY_LEFT) {
+        } else if (key == 2 || key == KEY_LEFT) {
             input_box_cursor_move(gInputBoxInput, &gInputBoxCursor, -1);
-        }
-        else if(key == 8 || key == KEY_BACKSPACE) {    // CTRL-H
-            if(gInputBoxCursor > 0) {
-                char* str2 = string_c_str(gInputBoxInput);
+        } else if (key == 8 || key == KEY_BACKSPACE) { // CTRL-H
+            if (gInputBoxCursor > 0) {
+                char *str2 = string_c_str(gInputBoxInput);
 
                 int utfpos = str_pointer2kanjipos(gKanjiCode, str2, str2 + gInputBoxCursor);
-                char* before_point = str_kanjipos2pointer(gKanjiCode, str2, utfpos-1);
-                int new_cursor = before_point-str2;
+                char *before_point = str_kanjipos2pointer(gKanjiCode, str2, utfpos - 1);
+                int new_cursor = before_point - str2;
 
                 string_erase(gInputBoxInput, before_point - str2, (str2 + gInputBoxCursor) - before_point);
                 gInputBoxCursor = new_cursor;
             }
-        }
-        else if(key == 4 || key == KEY_DC) {    // CTRL-D DELETE
-            char* str2 = string_c_str(gInputBoxInput);
-            if(string_length(gInputBoxInput) > 0) {
-                if(gInputBoxCursor < string_length(gInputBoxInput)) {
+        } else if (key == 4 || key == KEY_DC) { // CTRL-D DELETE
+            char *str2 = string_c_str(gInputBoxInput);
+            if (string_length(gInputBoxInput) > 0) {
+                if (gInputBoxCursor < string_length(gInputBoxInput)) {
                     int utfpos = str_pointer2kanjipos(gKanjiCode, str2, str2 + gInputBoxCursor);
-                    char* next_point = str_kanjipos2pointer(gKanjiCode, str2, utfpos+1);
+                    char *next_point = str_kanjipos2pointer(gKanjiCode, str2, utfpos + 1);
 
                     string_erase(gInputBoxInput, gInputBoxCursor, next_point - (str2 + gInputBoxCursor));
                 }
             }
-        }
-        else if(key == 1 || key == KEY_HOME) {    // CTRL-A
+        } else if (key == 1 || key == KEY_HOME) { // CTRL-A
             input_box_cursor_move(gInputBoxInput, &gInputBoxCursor, -999);
-        }
-        else if(key == 5 || key == KEY_END) {    // CTRL-E
+        } else if (key == 5 || key == KEY_END) { // CTRL-E
             input_box_cursor_move(gInputBoxInput, &gInputBoxCursor, 999);
+        } else if (key == 11) { // CTRL-K
+            string_erase(gInputBoxInput, gInputBoxCursor, string_length(gInputBoxInput) - gInputBoxCursor);
         }
-        else if(key == 11) {    // CTRL-K
-            string_erase(gInputBoxInput, gInputBoxCursor, string_length(gInputBoxInput)-gInputBoxCursor);
-        }
-        
-        else if(key == 21) {    // CTRL-U
+
+        else if (key == 21) { // CTRL-U
             string_put(gInputBoxInput, "");
 
             gInputBoxCursor = 0;
-        }
-        else if(key == 23) {     // CTRL-W
-            if(gInputBoxCursor > 0) {
-                const char* s = string_c_str(gInputBoxInput);
-                int pos = gInputBoxCursor-1;
-                if(s[pos]==' ' || s[pos]=='/' || s[pos]=='\'' || s[pos]=='"') {
-                    while(pos>=0 && (s[pos]==' ' || s[pos]=='/' || s[pos]=='\'' || s[pos]=='"'))
-                    {
+        } else if (key == 23) { // CTRL-W
+            if (gInputBoxCursor > 0) {
+                const char *s = string_c_str(gInputBoxInput);
+                int pos = gInputBoxCursor - 1;
+                if (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"') {
+                    while (pos >= 0 && (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"')) {
                         pos--;
                     }
                 }
-                while(pos>=0 && s[pos]!=' ' && s[pos]!='/' && s[pos]!='\'' && s[pos]!='"')
-                {
+                while (pos >= 0 && s[pos] != ' ' && s[pos] != '/' && s[pos] != '\'' && s[pos] != '"') {
                     pos--;
                 }
 
-                string_erase(gInputBoxInput, pos+1, gInputBoxCursor-pos-1);
+                string_erase(gInputBoxInput, pos + 1, gInputBoxCursor - pos - 1);
 
-                gInputBoxCursor = pos+1;
+                gInputBoxCursor = pos + 1;
             }
-        }
-        else if(meta==1 && key == 'd') {     // Meta-d
-            const char* s = string_c_str(gInputBoxInput);
+        } else if (meta == 1 && key == 'd') { // Meta-d
+            const char *s = string_c_str(gInputBoxInput);
 
-            if(s[gInputBoxCursor] != 0) {
+            if (s[gInputBoxCursor] != 0) {
                 int pos = gInputBoxCursor;
                 pos++;
-                while(s[pos]!=0 && (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"')) {
+                while (s[pos] != 0 && (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"')) {
                     pos++;
                 }
-                while(s[pos]!=0 && s[pos] != ' ' && s[pos] != '/' && s[pos] != '\'' && s[pos] != '"') {
+                while (s[pos] != 0 && s[pos] != ' ' && s[pos] != '/' && s[pos] != '\'' && s[pos] != '"') {
                     pos++;
                 }
 
-                string_erase(gInputBoxInput, gInputBoxCursor, pos-gInputBoxCursor);
+                string_erase(gInputBoxInput, gInputBoxCursor, pos - gInputBoxCursor);
             }
-        }
-        else if(meta==1 && key == 'b') {     // META-b
-            if(gInputBoxCursor > 0) {
-                const char* s = string_c_str(gInputBoxInput);
+        } else if (meta == 1 && key == 'b') { // META-b
+            if (gInputBoxCursor > 0) {
+                const char *s = string_c_str(gInputBoxInput);
                 int pos = gInputBoxCursor;
                 pos--;
-                while(pos>=0 && (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"')) {
+                while (pos >= 0 && (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"')) {
                     pos--;
                 }
-                while(pos>=0 && s[pos] != ' ' && s[pos] != '/' && s[pos] != '\'' && s[pos] != '"') {
+                while (pos >= 0 && s[pos] != ' ' && s[pos] != '/' && s[pos] != '\'' && s[pos] != '"') {
                     pos--;
                 }
 
-                gInputBoxCursor = pos+1;
+                gInputBoxCursor = pos + 1;
             }
-        }
-        else if(meta==1 && key == 'f') {     // META-f
-            const char* s = string_c_str(gInputBoxInput);
+        } else if (meta == 1 && key == 'f') { // META-f
+            const char *s = string_c_str(gInputBoxInput);
 
-            if(s[gInputBoxCursor] != 0) {
+            if (s[gInputBoxCursor] != 0) {
                 int pos = gInputBoxCursor;
                 pos++;
-                while(s[pos]!=0 && (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"')) {
+                while (s[pos] != 0 && (s[pos] == ' ' || s[pos] == '/' || s[pos] == '\'' || s[pos] == '"')) {
                     pos++;
                 }
-                while(s[pos]!=0 && s[pos] != ' ' && s[pos] != '/' && s[pos] != '\'' && s[pos] != '"') {
+                while (s[pos] != 0 && s[pos] != ' ' && s[pos] != '/' && s[pos] != '\'' && s[pos] != '"') {
                     pos++;
                 }
 
                 gInputBoxCursor = pos;
             }
-        }
-        else if(key == 3 || key == 7 || key == 27) { // CTRL-C -G Escape
+        } else if (key == 3 || key == 7 || key == 27) { // CTRL-C -G Escape
             result2 = 1;
             break;
-        }
-        else if(key == 12) {            // CTRL-L
+        } else if (key == 12) { // CTRL-L
             xclear_immediately();
-        }
-        else {
-            if(meta == 0 && !(key >= 0 && key <= 27)) {
+        } else {
+            if (meta == 0 && !(key >= 0 && key <= 27)) {
                 char tmp[128];
 
                 snprintf(tmp, 128, "%c", key);
@@ -490,18 +444,18 @@ int input_box(char* msg, char* result, int result_size, char* def_input, int def
             }
         }
     }
-    
+
     gView = NULL;
-    
+
     int maxx = mgetmaxx();
     int maxy = mgetmaxy();
-    
+
     xstrncpy(result, string_c_str(gInputBoxInput), result_size);
 
-    mmove_immediately(maxy -2, 0);
+    mmove_immediately(maxy - 2, 0);
 
 #if defined(__CYGWIN__)
-    xclear_immediately();       // 画面の再描写
+    xclear_immediately(); // 画面の再描写
     view();
     refresh();
 #endif
@@ -509,41 +463,38 @@ int input_box(char* msg, char* result, int result_size, char* def_input, int def
     return result2;
 }
 
-int input_box_on_readline(char* msg, char* result, int result_size, char* def_input, int def_cursor)
-{
+int input_box_on_readline(char *msg, char *result, int result_size, char *def_input, int def_cursor) {
 }
 
 /////////////////////////////////////////////////////////////////////////
 // select string
 /////////////////////////////////////////////////////////////////////////
-char* gSelectStrMsg;
-char** gSelectStrStr;
+char *gSelectStrMsg;
+char **gSelectStrStr;
 int gSelectStrCursor;
 int gSelectStrLen;
 
-void select_str_view()
-{
+void select_str_view() {
     int maxx = mgetmaxx();
     int maxy = mgetmaxy();
-    
+
     /// view ///
-    mclear_online(maxy-2);
+    mclear_online(maxy - 2);
     mclear_lastline();
 
-    move(maxy-2, 0);
+    move(maxy - 2, 0);
     printw("%s", gSelectStrMsg);
-    
-//        move(maxy-1, 0);
+
+    //        move(maxy-1, 0);
     printw(" ");
     int i;
-    for(i=0; i< gSelectStrLen; i++) {
-        if(gSelectStrCursor == i) {
+    for (i = 0; i < gSelectStrLen; i++) {
+        if (gSelectStrCursor == i) {
             attron(A_REVERSE);
             printw("%s", gSelectStrStr[i]);
             attroff(A_REVERSE);
             printw(" ");
-        }
-        else {
+        } else {
             printw("%s ", gSelectStrStr[i]);
         }
     }
@@ -551,15 +502,14 @@ void select_str_view()
     //move(maxy-2, 0);
 }
 
-int select_str(char* msg, char* str[], int len, int cancel)
-{
+int select_str(char *msg, char *str[], int len, int cancel) {
     gSelectStrMsg = msg;
     gSelectStrStr = str;
     gSelectStrLen = len;
-    
+
     gSelectStrCursor = 0;
-    
-    while(1) {
+
+    while (1) {
         xclear();
         view();
         filer_view(0);
@@ -570,30 +520,25 @@ int select_str(char* msg, char* str[], int len, int cancel)
         /// input ///
         int meta;
         int key = xgetch(&meta);
-        if(key == 10 || key == 13) {
+        if (key == 10 || key == 13) {
             break;
-        }
-        else if(key == 6 || key == KEY_RIGHT) {
+        } else if (key == 6 || key == KEY_RIGHT) {
             gSelectStrCursor++;
 
-            if(gSelectStrCursor >= len) gSelectStrCursor = len-1;
-        }
-        else if(key == 2 || key == KEY_LEFT) {
+            if (gSelectStrCursor >= len) gSelectStrCursor = len - 1;
+        } else if (key == 2 || key == KEY_LEFT) {
             gSelectStrCursor--;
 
-            if(gSelectStrCursor < 0) gSelectStrCursor= 0;
-        }
-        else if(key == 12) {            // CTRL-L
+            if (gSelectStrCursor < 0) gSelectStrCursor = 0;
+        } else if (key == 12) { // CTRL-L
             xclear_immediately();
-        }
-        else if(key == 3 || key == 7 | key == 27) { // CTRL-C -G Escape
+        } else if (key == 3 || key == 7 | key == 27) { // CTRL-C -G Escape
             gSelectStrCursor = cancel;
             break;
-        }
-        else {
+        } else {
             int i;
-            for(i=0; i< len; i++) {
-                if(toupper(key) == toupper(str[i][0])) {
+            for (i = 0; i < len; i++) {
+                if (toupper(key) == toupper(str[i][0])) {
                     gSelectStrCursor = i;
                     goto finished;
                 }
@@ -601,11 +546,11 @@ int select_str(char* msg, char* str[], int len, int cancel)
         }
     }
 finished:
-    
+
     gView = NULL;
 
 #if defined(__CYGWIN__)
-    xclear_immediately();       // 画面の再描写
+    xclear_immediately(); // 画面の再描写
     view();
     refresh();
 #endif
@@ -613,19 +558,17 @@ finished:
     return gSelectStrCursor;
 }
 
-int select_str_on_readline(char* msg, char* str[], int len, int cancel)
-{
+int select_str_on_readline(char *msg, char *str[], int len, int cancel) {
 }
 
-int select_str2(char* msg, char* str[], int len, int cancel)
-{
+int select_str2(char *msg, char *str[], int len, int cancel) {
     gSelectStrMsg = msg;
     gSelectStrStr = str;
     gSelectStrLen = len;
-    
+
     gSelectStrCursor = 0;
-    
-    while(1) {
+
+    while (1) {
         xclear();
         view();
         select_str_view();
@@ -634,30 +577,25 @@ int select_str2(char* msg, char* str[], int len, int cancel)
         /// input ///
         int meta;
         int key = xgetch(&meta);
-        if(key == 10 || key == 13) {
+        if (key == 10 || key == 13) {
             break;
-        }
-        else if(key == 6 || key == KEY_RIGHT) {
+        } else if (key == 6 || key == KEY_RIGHT) {
             gSelectStrCursor++;
 
-            if(gSelectStrCursor >= len) gSelectStrCursor = len-1;
-        }
-        else if(key == 2 || key == KEY_LEFT) {
+            if (gSelectStrCursor >= len) gSelectStrCursor = len - 1;
+        } else if (key == 2 || key == KEY_LEFT) {
             gSelectStrCursor--;
 
-            if(gSelectStrCursor < 0) gSelectStrCursor= 0;
-        }
-        else if(key == 12) {            // CTRL-L
+            if (gSelectStrCursor < 0) gSelectStrCursor = 0;
+        } else if (key == 12) { // CTRL-L
             xclear_immediately();
-        }
-        else if(key == 3 || key == 7 || key == 27) { // CTRL-C -G Escape
+        } else if (key == 3 || key == 7 || key == 27) { // CTRL-C -G Escape
             gSelectStrCursor = cancel;
             break;
-        }
-        else {
+        } else {
             int i;
-            for(i=0; i< len; i++) {
-                if(toupper(key) == toupper(str[i][0])) {
+            for (i = 0; i < len; i++) {
+                if (toupper(key) == toupper(str[i][0])) {
                     gSelectStrCursor = i;
                     goto finished;
                 }
@@ -665,11 +603,11 @@ int select_str2(char* msg, char* str[], int len, int cancel)
         }
     }
 finished:
-    
+
     gView = NULL;
 
 #if defined(__CYGWIN__)
-    xclear_immediately();       // 画面の再描写
+    xclear_immediately(); // 画面の再描写
     view();
     refresh();
 #endif
@@ -677,54 +615,51 @@ finished:
     return gSelectStrCursor;
 }
 
-void gui_init()
-{
+void gui_init() {
     gInputBoxInput = STRING_NEW_STACK("");
 }
 
-void mbox(int y, int x, int width, int height)
-{
-   char hbar[256];
-   int i;
+void mbox(int y, int x, int width, int height) {
+    char hbar[256];
+    int i;
 
-   hbar[0] = '+';
-   for(i=1; i<width-1; i++) {
-      hbar[i] = '-';
-   }
-   hbar[i] = '+';
-   hbar[i+1] = 0;
+    hbar[0] = '+';
+    for (i = 1; i < width - 1; i++) {
+        hbar[i] = '-';
+    }
+    hbar[i] = '+';
+    hbar[i + 1] = 0;
 
-   mvprintw(y, x, hbar);
-   for(i=0; i<height-2; i++) {
-       char hbar2[256];
+    mvprintw(y, x, hbar);
+    for (i = 0; i < height - 2; i++) {
+        char hbar2[256];
 
-       int j;
-       hbar2[0] = '|';
-       for(j=1; j<width-1; j++) {
-           hbar2[j] = ' ';
-       }
-       hbar2[j] = '|';
-       hbar2[j+1] = 0;
+        int j;
+        hbar2[0] = '|';
+        for (j = 1; j < width - 1; j++) {
+            hbar2[j] = ' ';
+        }
+        hbar2[j] = '|';
+        hbar2[j + 1] = 0;
 
-       mvprintw(y + 1 +i, x, hbar2);
-   }
+        mvprintw(y + 1 + i, x, hbar2);
+    }
 
-   mvprintw(y + height-1, x, hbar);
+    mvprintw(y + height - 1, x, hbar);
 }
 
-void mclear_lastline()
-{
+void mclear_lastline() {
     char space[1024];
     int x;
 
     const int maxx = mgetmaxx();
     const int maxy = mgetmaxy();
 
-    for(x=0; x<maxx-1; x++) {
+    for (x = 0; x < maxx - 1; x++) {
         space[x] = ' ';
     }
     space[x] = 0;
 
     attron(0);
-    mvprintw(maxy-1, 0, space);
+    mvprintw(maxy - 1, 0, space);
 }

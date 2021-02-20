@@ -1,12 +1,13 @@
 #include "common.h"
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
+
 #include <dirent.h>
 #include <errno.h>
-#include <utime.h>
-#include <time.h>
+#include <fcntl.h>
+#include <string.h>
 #include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+#include <utime.h>
 #if !defined(__DARWIN__) && !defined(__FREEBSD__)
 #include <sys/sysmacros.h>
 #endif
@@ -20,89 +21,76 @@
 #include <ncurses/ncurses.h>
 #endif
 
-
-void override_check_box(char* spath, struct stat* source_stat, char* dpath, struct stat* dpath_stat)
-{
+void override_check_box(char *spath, struct stat *source_stat, char *dpath, struct stat *dpath_stat) {
     const int maxx = mgetmaxx();
     const int maxy = mgetmaxy();
-    
-    const int y = maxy/2 - 5;
-    
-    mbox(y, 4, maxx-8, 11);
-    
+
+    const int y = maxy / 2 - 5;
+
+    mbox(y, 4, maxx - 8, 11);
+
     time_t t = source_stat->st_mtime;
-    struct tm* tm_ = (struct tm*)localtime(&t);
-    
-    int year = tm_->tm_year-100;
-    if(year < 0) year+=100;
-    while(year > 100) year-=100;
-    
-    mvprintw(y+1, 5, "source");
+    struct tm *tm_ = (struct tm *)localtime(&t);
+
+    int year = tm_->tm_year - 100;
+    if (year < 0) year += 100;
+    while (year > 100) year -= 100;
+
+    mvprintw(y + 1, 5, "source");
     char tmp[PATH_MAX];
     xstrncpy(tmp, spath, PATH_MAX);
-    if(S_ISDIR(source_stat->st_mode)) {
+    if (S_ISDIR(source_stat->st_mode)) {
         xstrncat(tmp, "/", PATH_MAX);
-    }
-    else if(S_ISFIFO(source_stat->st_mode)) {
+    } else if (S_ISFIFO(source_stat->st_mode)) {
         xstrncat(tmp, "|", PATH_MAX);
-    }
-    else if(S_ISSOCK(source_stat->st_mode)) {
+    } else if (S_ISSOCK(source_stat->st_mode)) {
         xstrncat(tmp, "=", PATH_MAX);
-    }
-    else if(S_ISLNK(source_stat->st_mode)) {
+    } else if (S_ISLNK(source_stat->st_mode)) {
         xstrncat(tmp, "@", PATH_MAX);
     }
-    
-    
-    mvprintw(y+2, 5, "path: %s", tmp);
-    mvprintw(y+3, 5, "size: %d", source_stat->st_size);
-    mvprintw(y+4, 5, "time: %02d-%02d-%02d %02d:%02d", year, tm_->tm_mon+1
-           , tm_->tm_mday, tm_->tm_hour, tm_->tm_min);
-    
+
+    mvprintw(y + 2, 5, "path: %s", tmp);
+    mvprintw(y + 3, 5, "size: %d", source_stat->st_size);
+    mvprintw(y + 4, 5, "time: %02d-%02d-%02d %02d:%02d", year, tm_->tm_mon + 1, tm_->tm_mday, tm_->tm_hour, tm_->tm_min);
+
     t = dpath_stat->st_mtime;
-    tm_ = (struct tm*)localtime(&t);
-    
-    year = tm_->tm_year-100;
-    if(year < 0) year+=100;
-    while(year > 100) year-=100;
-    
-    mvprintw(y+6, 5, "destination");
+    tm_ = (struct tm *)localtime(&t);
+
+    year = tm_->tm_year - 100;
+    if (year < 0) year += 100;
+    while (year > 100) year -= 100;
+
+    mvprintw(y + 6, 5, "destination");
     char tmp2[PATH_MAX];
     xstrncpy(tmp2, dpath, PATH_MAX);
-    if(S_ISDIR(dpath_stat->st_mode)) {
+    if (S_ISDIR(dpath_stat->st_mode)) {
         xstrncat(tmp2, "/", PATH_MAX);
-    }
-    else if(S_ISFIFO(dpath_stat->st_mode)) {
+    } else if (S_ISFIFO(dpath_stat->st_mode)) {
         xstrncat(tmp, "|", PATH_MAX);
-    }
-    else if(S_ISSOCK(dpath_stat->st_mode)) {
+    } else if (S_ISSOCK(dpath_stat->st_mode)) {
         xstrncat(tmp, "=", PATH_MAX);
-    }
-    else if(S_ISLNK(dpath_stat->st_mode)) {
+    } else if (S_ISLNK(dpath_stat->st_mode)) {
         xstrncat(tmp, "@", PATH_MAX);
     }
-    
-    mvprintw(y+7, 5, "path: %s", tmp2);
-    mvprintw(y+8, 5, "size: %d", dpath_stat->st_size);
-    mvprintw(y+9, 5, "time: %02d-%02d-%02d %02d:%02d", year, tm_->tm_mon+1
-           , tm_->tm_mday, tm_->tm_hour, tm_->tm_min);
+
+    mvprintw(y + 7, 5, "path: %s", tmp2);
+    mvprintw(y + 8, 5, "size: %d", dpath_stat->st_size);
+    mvprintw(y + 9, 5, "time: %02d-%02d-%02d %02d:%02d", year, tm_->tm_mon + 1, tm_->tm_mday, tm_->tm_hour, tm_->tm_min);
 }
 
-static char* gOverrideSPath;       // to give the arguments to override_check_box_view
-static struct stat* gOverrideStat;
-static char* gOverrideDPath;
-static struct stat* gOverrideDStat;
+static char *gOverrideSPath; // to give the arguments to override_check_box_view
+static struct stat *gOverrideStat;
+static char *gOverrideDPath;
+static struct stat *gOverrideDStat;
 
-void override_check_box_view()
-{
+void override_check_box_view() {
     override_check_box(gOverrideSPath, gOverrideStat, gOverrideDPath, gOverrideDStat);
 }
 
-static void copy_timestamp_and_permission(char* dpath, struct stat* source_stat, BOOL preserve, FILE* log, int* err_num)
-{
-    if(preserve || move) {
-        if(getuid() == 0) {
-            if(chown(dpath, source_stat->st_uid, source_stat->st_gid) <0) {
+static void copy_timestamp_and_permission(char *dpath, struct stat *source_stat, BOOL preserve, FILE *log, int *err_num) {
+    if (preserve || move) {
+        if (getuid() == 0) {
+            if (chown(dpath, source_stat->st_uid, source_stat->st_gid) < 0) {
                 fprintf(log, "owner of %s\n", dpath);
                 (*err_num)++;
             }
@@ -113,7 +101,7 @@ static void copy_timestamp_and_permission(char* dpath, struct stat* source_stat,
         utb.actime = source_stat->st_atime;
         utb.modtime = source_stat->st_mtime;
 
-        if(utime(dpath, &utb) < 0) {
+        if (utime(dpath, &utb) < 0) {
             fprintf(log, "time stamp of %s\n", dpath);
             (*err_num)++;
         }
@@ -121,25 +109,19 @@ static void copy_timestamp_and_permission(char* dpath, struct stat* source_stat,
 
     mode_t umask_before = umask(0);
 #if defined(S_ISTXT)
-    if(chmod(dpath, source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR
-        |S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH|S_ISUID|S_ISGID|S_ISTXT)) < 0) 
-    {
+    if (chmod(dpath, source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH | S_ISUID | S_ISGID | S_ISTXT)) < 0) {
         fprintf(log, "permission of %s\n", dpath);
         (*err_num)++;
     }
 #else
 
 #if defined(S_ISVTX)
-    if(chmod(dpath, source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR
-                |S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH|S_ISUID|S_ISGID|S_ISVTX)) < 0) 
-    {
+    if (chmod(dpath, source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH | S_ISUID | S_ISGID | S_ISVTX)) < 0) {
         fprintf(log, "permission of %s\n", dpath);
         (*err_num)++;
     }
 #else
-    if(chmod(dpath, source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR
-    |S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH|S_ISUID|S_ISGID)) < 0) 
-    {
+    if (chmod(dpath, source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH | S_ISUID | S_ISGID)) < 0) {
         fprintf(log, "permission of %s\n", dpath);
         (*err_num)++;
     }
@@ -149,29 +131,26 @@ static void copy_timestamp_and_permission(char* dpath, struct stat* source_stat,
     umask(umask_before);
 }
 
-static BOOL do_copy(char* spath, struct stat* source_stat, char* dpath, char* dpath_dirname, char* target_directory, BOOL move, BOOL preserve, FILE* log, int* err_num, enum eCopyOverrideWay* override_way, enum eRemoveWriteProtected* remove_write_protected);
+static BOOL do_copy(char *spath, struct stat *source_stat, char *dpath, char *dpath_dirname, char *target_directory, BOOL move, BOOL preserve, FILE *log, int *err_num, enum eCopyOverrideWay *override_way, enum eRemoveWriteProtected *remove_write_protected);
 
-static BOOL copy_directory_recursively(char* spath, char* dpath, char* dpath_dirname, char* target_directory, struct stat* source_stat, BOOL move, BOOL preserve, FILE* log, int* err_num, BOOL no_mkdir, enum eCopyOverrideWay* override_way, enum eRemoveWriteProtected* remove_write_protected)
-{
-    DIR* dir = opendir(spath);
-    if(dir == NULL) {
+static BOOL copy_directory_recursively(char *spath, char *dpath, char *dpath_dirname, char *target_directory, struct stat *source_stat, BOOL move, BOOL preserve, FILE *log, int *err_num, BOOL no_mkdir, enum eCopyOverrideWay *override_way, enum eRemoveWriteProtected *remove_write_protected) {
+    DIR *dir = opendir(spath);
+    if (dir == NULL) {
         fprintf(log, "%s --> can't open the directory\n", spath);
         (*err_num)++;
         return TRUE;
     }
 
-    if(!no_mkdir && mkdir(dpath, 0777) < 0)  { 
+    if (!no_mkdir && mkdir(dpath, 0777) < 0) {
         closedir(dir);
         fprintf(log, "%s --> C can't mkdir %s\n", spath, dpath);
         (*err_num)++;
         return TRUE;
     }
 
-    struct dirent* entry;
-    while((entry = readdir(dir)) != 0) {
-        if(strcmp(entry->d_name, ".") != 0
-            && strcmp(entry->d_name, "..") != 0)
-        {
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != 0) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             char spath2[PATH_MAX];
 
             xstrncpy(spath2, spath, PATH_MAX);
@@ -185,18 +164,17 @@ static BOOL copy_directory_recursively(char* spath, char* dpath, char* dpath_dir
             xstrncat(dpath2, entry->d_name, PATH_MAX);
 
             struct stat spath2_stat;
-            if(lstat(spath2, &spath2_stat) < 0) {
+            if (lstat(spath2, &spath2_stat) < 0) {
                 fprintf(log, "%s --> can't stat\n", spath2);
                 (*err_num)++;
-            }
-            else {
+            } else {
                 char dpath2_dirname[PATH_MAX];
                 xstrncpy(dpath2_dirname, target_directory, PATH_MAX);
 
                 char target_directory2[PATH_MAX];
                 xstrncpy(target_directory2, dpath2, PATH_MAX);
 
-                if(!do_copy(spath2, &spath2_stat, dpath2, dpath2_dirname, target_directory2, move, preserve, log, err_num, override_way, remove_write_protected)) {
+                if (!do_copy(spath2, &spath2_stat, dpath2, dpath2_dirname, target_directory2, move, preserve, log, err_num, override_way, remove_write_protected)) {
                     closedir(dir);
                     return FALSE;
                 }
@@ -206,16 +184,16 @@ static BOOL copy_directory_recursively(char* spath, char* dpath, char* dpath_dir
 
     (void)closedir(dir);
 
-    if(!no_mkdir) {
+    if (!no_mkdir) {
         mode_t umask_before = umask(0);
-        chmod(dpath, source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR |S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH));
+        chmod(dpath, source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH));
         umask(umask_before);
     }
 
     copy_timestamp_and_permission(dpath, source_stat, preserve, log, err_num);
 
-    if(move) {
-        if(rmdir(spath) < 0) {
+    if (move) {
+        if (rmdir(spath) < 0) {
             fprintf(log, "can't remove %s\n", spath);
             (*err_num)++;
         }
@@ -224,25 +202,21 @@ static BOOL copy_directory_recursively(char* spath, char* dpath, char* dpath_dir
     return TRUE;
 }
 
-static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, BOOL preserve, FILE* log, int* err_num)
-{
+static BOOL copy(char *spath, char *dpath, struct stat *source_stat, BOOL move, BOOL preserve, FILE *log, int *err_num) {
     /// regular file ///
-    if(S_ISREG(source_stat->st_mode)) {
+    if (S_ISREG(source_stat->st_mode)) {
         int fd = open(spath, O_RDONLY);
-        if(fd < 0) {
+        if (fd < 0) {
             fprintf(log, "%s --> can't open this file\n", spath);
             (*err_num)++;
             return TRUE;
         }
 
         mode_t umask_before = umask(0);
-        int fd2 = open(dpath, O_WRONLY|O_TRUNC|O_CREAT
-              , source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP
-                     |S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH)
-            );
+        int fd2 = open(dpath, O_WRONLY | O_TRUNC | O_CREAT, source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH));
         umask(umask_before);
 
-        if(fd2 < 0) {
+        if (fd2 < 0) {
             fprintf(log, "%s --> can't open %s\n", spath, dpath);
             (*err_num)++;
             close(fd);
@@ -250,7 +224,7 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
         }
 
         char buf[BUFSIZ];
-        while(1) {
+        while (1) {
             /// key input? ///
             fd_set mask;
 
@@ -262,21 +236,21 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
             tv.tv_usec = 0;
 
             select(1, &mask, NULL, NULL, &tv);
-            
-            if(FD_ISSET(0, &mask)) {
+
+            if (FD_ISSET(0, &mask)) {
                 int meta;
                 int key = xgetch(&meta);
 
-                if(key == 3 || key == 7 || key == 27) { // CTRL-G and CTRL-C
+                if (key == 3 || key == 7 || key == 27) { // CTRL-G and CTRL-C
                     merr_msg("canceled");
                     close(fd);
                     close(fd2);
                     return FALSE;
                 }
             }
-            
+
             int n = read(fd, buf, BUFSIZ);
-            if(n < 0) {
+            if (n < 0) {
                 fprintf(log, "%s --> can't read this file\n", spath);
                 (*err_num)++;
                 close(fd);
@@ -284,12 +258,12 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
                 (void)unlink(dpath);
                 return TRUE;
             }
-            
-            if(n == 0) {
+
+            if (n == 0) {
                 break;
             }
 
-            if(write(fd2, buf, n) < 0) {
+            if (write(fd2, buf, n) < 0) {
                 fprintf(log, "%s --> can't write this file\n", spath);
                 (*err_num)++;
                 close(fd);
@@ -298,32 +272,32 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
                 return TRUE;
             }
         }
-    
+
         (void)close(fd);
         (void)close(fd2);
 
         copy_timestamp_and_permission(dpath, source_stat, preserve, log, err_num);
     }
     /// sym link ///
-    else if(S_ISLNK(source_stat->st_mode)) {
+    else if (S_ISLNK(source_stat->st_mode)) {
         char link[PATH_MAX];
         int n = readlink(spath, link, PATH_MAX);
-        if(n < 0) {
+        if (n < 0) {
             fprintf(log, "%s --> can't readlink this symbolic link\n", spath);
             (*err_num)++;
             return TRUE;
         }
         link[n] = 0;
 
-        if(symlink(link, dpath) < 0) {
+        if (symlink(link, dpath) < 0) {
             fprintf(log, "%s --> can't symlink this symbolic link\n", spath);
             (*err_num)++;
             return TRUE;
         }
 
-        if(preserve || move) {
-            if(getuid() == 0) {
-                if(lchown(dpath, source_stat->st_uid, source_stat->st_gid) < 0) {
+        if (preserve || move) {
+            if (getuid() == 0) {
+                if (lchown(dpath, source_stat->st_uid, source_stat->st_gid) < 0) {
                     fprintf(log, "owner of %s\n", dpath);
                     (*err_num)++;
                     return TRUE;
@@ -332,16 +306,14 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
         }
     }
     /// character device ///
-    else if(S_ISCHR(source_stat->st_mode)) {
+    else if (S_ISCHR(source_stat->st_mode)) {
         int major_ = major(source_stat->st_rdev);
         int minor_ = minor(source_stat->st_rdev);
         mode_t umask_before = umask(0);
-        int result = mknod(dpath
-                , (source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH)) | S_IFCHR
-                        , makedev(major_, minor_));
+        int result = mknod(dpath, (source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)) | S_IFCHR, makedev(major_, minor_));
         umask(umask_before);
 
-        if(result < 0) {
+        if (result < 0) {
             fprintf(log, "%s --> can't mknod %s\n", spath, dpath);
             (*err_num)++;
             return TRUE;
@@ -350,16 +322,14 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
         copy_timestamp_and_permission(dpath, source_stat, preserve, log, err_num);
     }
     /// block device ///
-    else if(S_ISBLK(source_stat->st_mode)) {
+    else if (S_ISBLK(source_stat->st_mode)) {
         int major_ = major(source_stat->st_rdev);
         int minor_ = minor(source_stat->st_rdev);
         mode_t umask_before = umask(0);
 
-        int result = mknod(dpath
-            , (source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH)) | S_IFBLK
-            , makedev(major_, minor_));
+        int result = mknod(dpath, (source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)) | S_IFBLK, makedev(major_, minor_));
         umask(umask_before);
-        if(result < 0) {
+        if (result < 0) {
             fprintf(log, "%s --> can't mknod %s\n", spath, dpath);
             (*err_num)++;
             return TRUE;
@@ -368,13 +338,11 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
         copy_timestamp_and_permission(dpath, source_stat, preserve, log, err_num);
     }
     /// fifo ///
-    else if(S_ISFIFO(source_stat->st_mode)) {
+    else if (S_ISFIFO(source_stat->st_mode)) {
         mode_t umask_before = umask(0);
-        int result = mknod(dpath
-            , (source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP |S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH)) | S_IFIFO
-                            , 0);
+        int result = mknod(dpath, (source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)) | S_IFIFO, 0);
         umask(umask_before);
-        if(result < 0) {
+        if (result < 0) {
             fprintf(log, "%s --> can't mknod %s\n", spath, dpath);
             (*err_num)++;
             return TRUE;
@@ -383,13 +351,11 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
         copy_timestamp_and_permission(dpath, source_stat, preserve, log, err_num);
     }
     /// socket ///
-    else if(S_ISSOCK(source_stat->st_mode)) {
+    else if (S_ISSOCK(source_stat->st_mode)) {
         mode_t umask_before = umask(0);
-        int result = mknod(dpath
-            , (source_stat->st_mode & (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP |S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH)) | S_IFSOCK
-            , 0);
+        int result = mknod(dpath, (source_stat->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)) | S_IFSOCK, 0);
         umask(umask_before);
-        if(result < 0) {
+        if (result < 0) {
             fprintf(log, "%s --> can't mknod %s\n", spath, dpath);
             (*err_num)++;
             return TRUE;
@@ -407,32 +373,29 @@ static BOOL copy(char* spath, char* dpath, struct stat* source_stat, BOOL move, 
     return TRUE;
 }
 
-static BOOL override_check(char* spath, struct stat* source_stat, char* dpath, char* dpath_dirname, BOOL* run_copy, BOOL* no_mkdir, FILE* log, int* err_num, enum eCopyOverrideWay* override_way, enum eRemoveWriteProtected* remove_write_protected)
-{
-
+static BOOL override_check(char *spath, struct stat *source_stat, char *dpath, char *dpath_dirname, BOOL *run_copy, BOOL *no_mkdir, FILE *log, int *err_num, enum eCopyOverrideWay *override_way, enum eRemoveWriteProtected *remove_write_protected) {
     int raw_mode = mis_raw_mode();
 
-    if(access(dpath, F_OK) == 0) {
+    if (access(dpath, F_OK) == 0) {
         struct stat dpath_stat;
 
-        if(lstat(dpath, &dpath_stat) < 0) {
+        if (lstat(dpath, &dpath_stat) < 0) {
             fprintf(log, "%s --> can't lstat %s\n", spath, dpath);
             (*err_num)++;
             return TRUE;
         }
-        
+
         /// can I override ? ///
         BOOL select_newer = FALSE;
 
-        if(S_ISDIR(source_stat->st_mode) && S_ISDIR(dpath_stat.st_mode)) {
+        if (S_ISDIR(source_stat->st_mode) && S_ISDIR(dpath_stat.st_mode)) {
             *no_mkdir = TRUE;
-        }
-        else {
-            if(*override_way == kNone) {
+        } else {
+            if (*override_way == kNone) {
                 int ret;
-override_select_str:
-                if(raw_mode) {
-                    gOverrideSPath = spath;    // give the arguments to override_check_box_view
+            override_select_str:
+                if (raw_mode) {
+                    gOverrideSPath = spath; // give the arguments to override_check_box_view
                     gOverrideStat = source_stat;
                     gOverrideDPath = dpath;
                     gOverrideDStat = &dpath_stat;
@@ -441,132 +404,123 @@ override_select_str:
 
                     gView();
 
-                    const char* str[] = {
-                        "No", "Yes", "Newer", "Rename", "No(all)", "Yes(all)", "Newer(all)", "Cancel"
-                    };
+                    const char *str[] = {
+                        "No", "Yes", "Newer", "Rename", "No(all)", "Yes(all)", "Newer(all)", "Cancel"};
 
                     char buf[256];
                     snprintf(buf, 256, "override? ");
-                    ret = select_str2(buf, (char**)str, 8, 7);
-                    
+                    ret = select_str2(buf, (char **)str, 8, 7);
+
                     gView = NULL;
 
                     clear();
                     view();
                     refresh();
-                }
-                else {
-                    const char* str[] = {
-                        "No", "Yes", "Newer", "Rename", "No(all)", "Yes(all)", "Newer(all)", "Cancel"
-                    };
+                } else {
+                    const char *str[] = {
+                        "No", "Yes", "Newer", "Rename", "No(all)", "Yes(all)", "Newer(all)", "Cancel"};
 
                     char buf[256];
                     snprintf(buf, 256, "override? ");
-                    ret = select_str_on_readline(buf, (char**)str, 8, 7);
+                    ret = select_str_on_readline(buf, (char **)str, 8, 7);
                 }
-                
-                switch(ret) {
-                    case 0: // no
-                        *run_copy = FALSE;
-                        break;
 
-                    case 1: // yes
-                        if(!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
-                            return FALSE;
-                        }
-                        break;
+                switch (ret) {
+                case 0: // no
+                    *run_copy = FALSE;
+                    break;
 
-                    case 2: // newer
-                        select_newer = TRUE;
-                        break;
-                        
-                    case 3: { // rename
-                        char new_dpath[PATH_MAX];
-
-                        if(raw_mode) {
-                            char result[1024];
-                            
-                            BOOL exist_rename_file;
-                            do {
-                                if(input_box("input name:", result, 1024, "", 0) == 1) {
-                                    goto override_select_str;
-                                }
-                                
-                                xstrncpy(new_dpath, dpath_dirname, PATH_MAX);
-                                xstrncat(new_dpath, result, PATH_MAX);
-                                
-                                exist_rename_file = access(new_dpath, F_OK) == 0;
-                                
-                                if(exist_rename_file) {
-                                    merr_msg("same name exists");
-                                }
-                            } while(exist_rename_file);
-                        }
-                        else {
-                            char result[1024];
-                            
-                            BOOL exist_rename_file;
-                            do {
-                                if(input_box_on_readline("input name:", result, 1024, "", 0) == 1) {
-                                    goto override_select_str;
-                                }
-                                
-                                xstrncpy(new_dpath, dpath_dirname, PATH_MAX);
-                                xstrncat(new_dpath, result, PATH_MAX);
-                                
-                                exist_rename_file = access(new_dpath, F_OK) == 0;
-                                
-                                if(exist_rename_file) {
-                                    merr_msg("same name exists\n");
-                                }
-                            } while(exist_rename_file);
-                        }
-
-                        xstrncpy(dpath, new_dpath, PATH_MAX);
-                        }
-                        break;
-                        
-                    case 4: // no all
-                        *override_way = kNoAll;
-                        *run_copy = FALSE;
-                        break;
-
-                    case 5: // yes all
-                        if(!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
-                            return FALSE;
-                        }
-                        *override_way = kYesAll;
-                        break;
-
-                    case 6: // newer all
-                        *override_way = kSelectNewer;
-                        select_newer = TRUE;
-                        break;
-
-                    case 7: // cancel
+                case 1: // yes
+                    if (!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
                         return FALSE;
-                }
-            }
-            else if(*override_way == kYesAll) {
-                if(!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
+                    }
+                    break;
+
+                case 2: // newer
+                    select_newer = TRUE;
+                    break;
+
+                case 3: { // rename
+                    char new_dpath[PATH_MAX];
+
+                    if (raw_mode) {
+                        char result[1024];
+
+                        BOOL exist_rename_file;
+                        do {
+                            if (input_box("input name:", result, 1024, "", 0) == 1) {
+                                goto override_select_str;
+                            }
+
+                            xstrncpy(new_dpath, dpath_dirname, PATH_MAX);
+                            xstrncat(new_dpath, result, PATH_MAX);
+
+                            exist_rename_file = access(new_dpath, F_OK) == 0;
+
+                            if (exist_rename_file) {
+                                merr_msg("same name exists");
+                            }
+                        } while (exist_rename_file);
+                    } else {
+                        char result[1024];
+
+                        BOOL exist_rename_file;
+                        do {
+                            if (input_box_on_readline("input name:", result, 1024, "", 0) == 1) {
+                                goto override_select_str;
+                            }
+
+                            xstrncpy(new_dpath, dpath_dirname, PATH_MAX);
+                            xstrncat(new_dpath, result, PATH_MAX);
+
+                            exist_rename_file = access(new_dpath, F_OK) == 0;
+
+                            if (exist_rename_file) {
+                                merr_msg("same name exists\n");
+                            }
+                        } while (exist_rename_file);
+                    }
+
+                    xstrncpy(dpath, new_dpath, PATH_MAX);
+                } break;
+
+                case 4: // no all
+                    *override_way = kNoAll;
+                    *run_copy = FALSE;
+                    break;
+
+                case 5: // yes all
+                    if (!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
+                        return FALSE;
+                    }
+                    *override_way = kYesAll;
+                    break;
+
+                case 6: // newer all
+                    *override_way = kSelectNewer;
+                    select_newer = TRUE;
+                    break;
+
+                case 7: // cancel
                     return FALSE;
                 }
-            }
-            else if(*override_way == kNoAll) {
+            } else if (*override_way == kYesAll) {
+                if (!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
+                    return FALSE;
+                }
+            } else if (*override_way == kNoAll) {
                 *run_copy = FALSE;
-            }
-            else if(*override_way == kSelectNewer) {
+            } else if (*override_way == kSelectNewer) {
                 select_newer = TRUE;
             }
         }
 
-        if(select_newer) {
-            if(source_stat->st_mtime > dpath_stat.st_mtime) {
-                if(!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
+        if (select_newer) {
+            if (source_stat->st_mtime > dpath_stat.st_mtime) {
+                if (!remove_file(dpath, TRUE, FALSE, err_num, log, remove_write_protected)) {
                     return FALSE;
                 }
-            }
-            else {
+            } else {
                 *run_copy = FALSE;
             }
         }
@@ -575,38 +529,36 @@ override_select_str:
     return TRUE;
 }
 
-// copy spath to dpath with checking override 
+// copy spath to dpath with checking override
 // spath, spath_dirname, spath_basename, dpath, dpath_dirname, dpath_basename are allocated with PATH_MAX size
 // Assuming the file is directory, last character of spath, spath_dirname, spath_basename, dpath, dpath_dirname, dpath_basename is not /.
-static BOOL do_copy(char* spath, struct stat* source_stat, char* dpath, char* dpath_dirname, char* target_directory, BOOL move, BOOL preserve, FILE* log, int* err_num, enum eCopyOverrideWay* override_way, enum eRemoveWriteProtected* remove_write_protected)
-{
+static BOOL do_copy(char *spath, struct stat *source_stat, char *dpath, char *dpath_dirname, char *target_directory, BOOL move, BOOL preserve, FILE *log, int *err_num, enum eCopyOverrideWay *override_way, enum eRemoveWriteProtected *remove_write_protected) {
     BOOL raw_mode = mis_raw_mode();
 
     /// Have the destination file existed already ? ///
     BOOL no_mkdir = FALSE;
     BOOL run_copy = TRUE;
 
-    if(!override_check(spath, source_stat, dpath, dpath_dirname, &run_copy, &no_mkdir, log, err_num, override_way, remove_write_protected)) {
+    if (!override_check(spath, source_stat, dpath, dpath_dirname, &run_copy, &no_mkdir, log, err_num, override_way, remove_write_protected)) {
         return FALSE;
     }
 
-    if(run_copy) {
+    if (run_copy) {
         /// dir ///
-        if(S_ISDIR(source_stat->st_mode)) {
+        if (S_ISDIR(source_stat->st_mode)) {
             /// msg ///
-            char buf[PATH_MAX+16];
-            snprintf(buf, PATH_MAX+16, "entering %s", spath);
+            char buf[PATH_MAX + 16];
+            snprintf(buf, PATH_MAX + 16, "entering %s", spath);
             msg_nonstop("%s", buf);
 
-            if(move) {
-                if(rename(spath, dpath) < 0) {
-                    if(!copy_directory_recursively(spath, dpath, dpath_dirname, target_directory, source_stat, move, preserve, log, err_num, no_mkdir, override_way, remove_write_protected)) {
+            if (move) {
+                if (rename(spath, dpath) < 0) {
+                    if (!copy_directory_recursively(spath, dpath, dpath_dirname, target_directory, source_stat, move, preserve, log, err_num, no_mkdir, override_way, remove_write_protected)) {
                         return FALSE;
                     }
                 }
-            }
-            else {
-                if(!copy_directory_recursively(spath, dpath, dpath_dirname, target_directory, source_stat, move, preserve, log, err_num, no_mkdir, override_way, remove_write_protected)) {
+            } else {
+                if (!copy_directory_recursively(spath, dpath, dpath_dirname, target_directory, source_stat, move, preserve, log, err_num, no_mkdir, override_way, remove_write_protected)) {
                     return FALSE;
                 }
             }
@@ -614,34 +566,32 @@ static BOOL do_copy(char* spath, struct stat* source_stat, char* dpath, char* dp
         /// file ///
         else {
             /// msg ///
-            char buf[PATH_MAX+16];
-            if(move)
-                snprintf(buf, PATH_MAX+16, "moving %s", spath);
+            char buf[PATH_MAX + 16];
+            if (move)
+                snprintf(buf, PATH_MAX + 16, "moving %s", spath);
             else
-                snprintf(buf, PATH_MAX+16, "copying %s", spath);
+                snprintf(buf, PATH_MAX + 16, "copying %s", spath);
 
             msg_nonstop("%s", buf);
 
             /// go ///
-            if(move) {
-                if(rename(spath, dpath) < 0) {
-                    if(!copy(spath, dpath, source_stat, move, preserve, log, err_num)) {
+            if (move) {
+                if (rename(spath, dpath) < 0) {
+                    if (!copy(spath, dpath, source_stat, move, preserve, log, err_num)) {
                         return FALSE;
                     }
 
-                    if(!remove_file(spath, TRUE, FALSE, err_num, log, remove_write_protected)) {
+                    if (!remove_file(spath, TRUE, FALSE, err_num, log, remove_write_protected)) {
                         return FALSE;
                     }
                 }
-            }
-            else {
-                if(!copy(spath, dpath, source_stat, move, preserve, log, err_num)) {
+            } else {
+                if (!copy(spath, dpath, source_stat, move, preserve, log, err_num)) {
                     return FALSE;
                 }
             }
         }
-    }
-    else {
+    } else {
         fprintf(log, "%s --> can't overwrite %s\n", spath, dpath);
         (*err_num)++;
     }
@@ -649,23 +599,21 @@ static BOOL do_copy(char* spath, struct stat* source_stat, char* dpath, char* dp
     return TRUE;
 }
 
-static void make_absolute_path_from_relative_path(char* path1, char* dest_path, const int dest_path_size)
-{
+static void make_absolute_path_from_relative_path(char *path1, char *dest_path, const int dest_path_size) {
     const int len = strlen(path1);
 
     /// add current working directory ///
     char path2[PATH_MAX];
 
-    if(path1[0] == '/') {
+    if (path1[0] == '/') {
         xstrncpy(path2, path1, PATH_MAX);
-    }
-    else {
+    } else {
         char cwd[PATH_MAX];
         mygetcwd(cwd, PATH_MAX);
 
         xstrncpy(path2, cwd, PATH_MAX);
         int cwd_len = strlen(cwd);
-        if(cwd[cwd_len-1] != '/') {
+        if (cwd[cwd_len - 1] != '/') {
             xstrncat(path2, "/", PATH_MAX);
         }
         xstrncat(path2, path1, PATH_MAX);
@@ -674,18 +622,17 @@ static void make_absolute_path_from_relative_path(char* path1, char* dest_path, 
     /// remove continual /
     char path3[PATH_MAX];
 
-    char* p = path2;
-    char* p2 = path3;
+    char *p = path2;
+    char *p2 = path3;
 
-    while(*p) {
-        if(*p == '/') {
-            while(*p == '/') {
+    while (*p) {
+        if (*p == '/') {
+            while (*p == '/') {
                 p++;
             }
 
             *p2++ = '/';
-        }
-        else {
+        } else {
             *p2++ = *p++;
         }
     }
@@ -697,34 +644,30 @@ static void make_absolute_path_from_relative_path(char* path1, char* dest_path, 
     p = path3;
     p2 = path4;
 
-    while(*p) {
-        if(*p == '/' && *(p+1) == '.' && (*(p+2) == '/' || *(p+2) == 0)) {
-            p+=2;
-        }
-        else if(*p == '/' && *(p+1) == '.' && *(p+2) == '.' && (*(p+3) == '/' || *(p+3) == 0)) {
+    while (*p) {
+        if (*p == '/' && *(p + 1) == '.' && (*(p + 2) == '/' || *(p + 2) == 0)) {
+            p += 2;
+        } else if (*p == '/' && *(p + 1) == '.' && *(p + 2) == '.' && (*(p + 3) == '/' || *(p + 3) == 0)) {
             /// moving to parent directory ///
-            while(1) {
-                if(p2 < path4) {  // invalid path, so move to root 
+            while (1) {
+                if (p2 < path4) { // invalid path, so move to root
                     p2 = path4;
                     break;
-                }
-                else if(*p2 == '/') {
-                    *p2 = 0;  // delete / for next /..
+                } else if (*p2 == '/') {
+                    *p2 = 0; // delete / for next /..
                     break;
-                }
-                else {
+                } else {
                     p2--;
                 }
             }
 
-            p+=3;
-        }
-        else {
+            p += 3;
+        } else {
             *p2++ = *p++;
         }
     }
 
-    if(p2 == path4) {
+    if (p2 == path4) {
         *p2++ = '/';
     }
     *p2 = 0;
@@ -733,8 +676,7 @@ static void make_absolute_path_from_relative_path(char* path1, char* dest_path, 
 }
 
 // dest is destination directory, not renaming.
-static BOOL copy_file_into_directory(char* source2, struct stat* source_stat, char* dest2, BOOL move, BOOL preserve, FILE* log, int* err_num, enum eCopyOverrideWay* override_way, enum eRemoveWriteProtected* remove_write_protected)
-{
+static BOOL copy_file_into_directory(char *source2, struct stat *source_stat, char *dest2, BOOL move, BOOL preserve, FILE *log, int *err_num, enum eCopyOverrideWay *override_way, enum eRemoveWriteProtected *remove_write_protected) {
     /// make absolute path from relative path ///
     char spath[PATH_MAX];
     make_absolute_path_from_relative_path(source2, spath, PATH_MAX);
@@ -749,25 +691,23 @@ static BOOL copy_file_into_directory(char* source2, struct stat* source_stat, ch
     char dpath_dirname[PATH_MAX];
     char dpath_basename[PATH_MAX];
 
-    char* p = spath + strlen(spath) -1;
+    char *p = spath + strlen(spath) - 1;
 
-    while(p >= spath) {
-        if(*p == '/') {
+    while (p >= spath) {
+        if (*p == '/') {
             break;
-        }
-        else {
+        } else {
             p--;
         }
     }
 
-    if(p < spath) {
+    if (p < spath) {
         xstrncpy(spath_dirname, "", PATH_MAX);
         xstrncpy(spath_basename, spath, PATH_MAX);
 
         xstrncpy(dpath_dirname, dest3, PATH_MAX);
         xstrncpy(dpath_basename, spath, PATH_MAX);
-    }
-    else {
+    } else {
         memcpy(spath_dirname, spath, p - spath);
         spath_dirname[p - spath] = 0;
 
@@ -792,34 +732,33 @@ static BOOL copy_file_into_directory(char* source2, struct stat* source_stat, ch
     xstrncat(target_directory, spath_basename, PATH_MAX);
 
     /// check invalid copy ///
-    if(strcmp(spath, dpath) == 0) {  // source and destination are same
+    if (strcmp(spath, dpath) == 0) { // source and destination are same
         fprintf(log, "%s --> source and destination are same\n", spath);
         (*err_num)++;
         return TRUE;
     }
 
-    if(strcmp(spath_dirname, dpath) == 0) { // a parent of source file and a destination directory are same
+    if (strcmp(spath_dirname, dpath) == 0) { // a parent of source file and a destination directory are same
         fprintf(log, "%s --> a parent of source file and a destination directory are same\n", spath);
         (*err_num)++;
         return TRUE;
     }
 
-    if(S_ISDIR(source_stat->st_mode) && strstr(dpath, spath) == dpath) {        // copy parent directory to child directory
+    if (S_ISDIR(source_stat->st_mode) && strstr(dpath, spath) == dpath) { // copy parent directory to child directory
         fprintf(log, "%s --> can't copy parent directory to child directory.\n", spath);
         (*err_num)++;
         return TRUE;
     }
 
     /// do copy! ///
-    if(!do_copy(spath, source_stat, dpath, dpath_dirname, target_directory, move, preserve, log, err_num, override_way, remove_write_protected)) {
+    if (!do_copy(spath, source_stat, dpath, dpath_dirname, target_directory, move, preserve, log, err_num, override_way, remove_write_protected)) {
         return FALSE;
     }
 
     return TRUE;
 }
 
-static BOOL rename_copy(char* source2, struct stat* source_stat, char* dest2, BOOL move, BOOL preserve, FILE* log, int* err_num, enum eCopyOverrideWay* override_way, enum eRemoveWriteProtected* remove_write_protected)
-{
+static BOOL rename_copy(char *source2, struct stat *source_stat, char *dest2, BOOL move, BOOL preserve, FILE *log, int *err_num, enum eCopyOverrideWay *override_way, enum eRemoveWriteProtected *remove_write_protected) {
     /// make absolute path from relative path ///
     char spath[PATH_MAX];
     make_absolute_path_from_relative_path(source2, spath, PATH_MAX);
@@ -831,24 +770,22 @@ static BOOL rename_copy(char* source2, struct stat* source_stat, char* dest2, BO
     char spath_dirname[PATH_MAX];
     char spath_basename[PATH_MAX];
 
-    char* p = spath + strlen(spath) -1;
+    char *p = spath + strlen(spath) - 1;
 
-    while(p >= spath) {
-        if(*p == '/') {
+    while (p >= spath) {
+        if (*p == '/') {
             break;
-        }
-        else {
+        } else {
             p--;
         }
     }
 
-    if(p < spath) {
+    if (p < spath) {
         strcpy(spath_dirname, "");
         xstrncpy(spath_basename, spath, PATH_MAX);
-    }
-    else {
+    } else {
         memcpy(spath_dirname, spath, p - spath);
-        spath_dirname[p-spath] = 0;
+        spath_dirname[p - spath] = 0;
         xstrncpy(spath_basename, p + 1, PATH_MAX);
     }
 
@@ -858,22 +795,20 @@ static BOOL rename_copy(char* source2, struct stat* source_stat, char* dest2, BO
 
     p = dpath + strlen(dpath) - 1;
 
-    while(p >= dpath) {
-        if(*p == '/') {
+    while (p >= dpath) {
+        if (*p == '/') {
             break;
-        }
-        else {
+        } else {
             p--;
         }
     }
 
-    if(p < dpath) {
+    if (p < dpath) {
         xstrncpy(dpath_dirname, "", PATH_MAX);
         xstrncpy(dpath_basename, dpath, PATH_MAX);
-    }
-    else {
+    } else {
         memcpy(dpath_dirname, dpath, p - dpath);
-        dpath_dirname[p-dpath] = 0;
+        dpath_dirname[p - dpath] = 0;
         xstrncpy(dpath_basename, p + 1, PATH_MAX);
     }
 
@@ -883,13 +818,12 @@ static BOOL rename_copy(char* source2, struct stat* source_stat, char* dest2, BO
     xstrncpy(target_directory, dpath, PATH_MAX);
 
     /// do copy ///
-    if(!do_copy(spath, source_stat, dpath, dpath_dirname, target_directory, move, preserve, log, err_num, override_way, remove_write_protected)) {
+    if (!do_copy(spath, source_stat, dpath, dpath_dirname, target_directory, move, preserve, log, err_num, override_way, remove_write_protected)) {
         return FALSE;
     }
 
     return TRUE;
 }
-
 
 // this function is entrance point from other module
 
@@ -901,8 +835,7 @@ static BOOL rename_copy(char* source2, struct stat* source_stat, char* dest2, BO
 
 // log must be oppend. It will be written error log.
 // if err_num is setted greater than 0, error occured.
-BOOL copy_file(char* source, char* dest, BOOL move, BOOL preserve, enum eCopyOverrideWay* override_way, enum eRemoveWriteProtected* remove_write_protected, FILE* log, int* err_num)
-{
+BOOL copy_file(char *source, char *dest, BOOL move, BOOL preserve, enum eCopyOverrideWay *override_way, enum eRemoveWriteProtected *remove_write_protected, FILE *log, int *err_num) {
     BOOL raw_mode = mis_raw_mode();
 
     /// have the user pressed C-c ? ///
@@ -916,12 +849,12 @@ BOOL copy_file(char* source, char* dest, BOOL move, BOOL preserve, enum eCopyOve
     tv.tv_usec = 0;
 
     select(1, &mask, NULL, NULL, &tv);
-    
-    if(FD_ISSET(0, &mask)) {
+
+    if (FD_ISSET(0, &mask)) {
         int meta;
         int key = xgetch(&meta);
 
-        if(key == 3 || key == 7 || key == 27) {   // CTRL-G and CTRL-C
+        if (key == 3 || key == 7 || key == 27) { // CTRL-G and CTRL-C
             merr_msg("copy_file: canceled");
             return FALSE;
         }
@@ -930,7 +863,7 @@ BOOL copy_file(char* source, char* dest, BOOL move, BOOL preserve, enum eCopyOve
     /// source stat ///
     struct stat source_stat;
 
-    if(lstat(source, &source_stat) < 0) {
+    if (lstat(source, &source_stat) < 0) {
         fprintf(log, "%s --> can't lstat %s\n", source, source);
         (*err_num)++;
         return TRUE;
@@ -942,77 +875,70 @@ BOOL copy_file(char* source, char* dest, BOOL move, BOOL preserve, enum eCopyOve
 
     int slen = strlen(source2);
 
-    if(source2[slen-1] == '/') { source2[slen-1] = 0; }
+    if (source2[slen - 1] == '/') { source2[slen - 1] = 0; }
 
     /// does the destination file exist? ///
-    if(access(dest, F_OK) != 0) {
+    if (access(dest, F_OK) != 0) {
         int dlen = strlen(dest);
 
-
         /// is this directory name? ///
-        if(dest[dlen-1] == '/') {
+        if (dest[dlen - 1] == '/') {
             /// make the destination directory ///
-            char* str[] = {
-                "yes", "no"
-            };
+            char *str[] = {
+                "yes", "no"};
 
             char buf[BUFSIZ];
             snprintf(buf, BUFSIZ, "%s doesn't exist. create?", dest);
 
             int select_num;
-            if(raw_mode) {
+            if (raw_mode) {
                 select_num = select_str(buf, str, 2, 1);
-            }
-            else {
+            } else {
                 select_num = select_str_on_readline(buf, str, 2, 1);
             }
-                
-            if(select_num == 0) {  // yes
+
+            if (select_num == 0) { // yes
                 snprintf(buf, BUFSIZ, "mkdir -p \"%s\"", dest);
-                if(system(buf) == 0) {
+                if (system(buf) == 0) {
                     char dest2[PATH_MAX];
                     xstrncpy(dest2, dest, PATH_MAX);
 
-                    dest2[dlen-1] = 0; // remove / of last character for system calls
+                    dest2[dlen - 1] = 0; // remove / of last character for system calls
 
-                    if(!copy_file_into_directory(source2, &source_stat, dest2, move, preserve, log, err_num, override_way, remove_write_protected)) {
+                    if (!copy_file_into_directory(source2, &source_stat, dest2, move, preserve, log, err_num, override_way, remove_write_protected)) {
                         return FALSE;
                     }
-                }
-                else {
+                } else {
                     fprintf(log, "%s --> A can't mkdir -p \"%s\"\n", source2, dest);
                     (*err_num)++;
                 }
-            }
-            else {
+            } else {
                 fprintf(log, "%s --> B can't mkdir -p \"%s\"\n", source2, dest);
                 (*err_num)++;
             }
-        }
-        else {
-            if(!rename_copy(source2, &source_stat, dest, move, preserve, log, err_num, override_way, remove_write_protected)) {
+        } else {
+            if (!rename_copy(source2, &source_stat, dest, move, preserve, log, err_num, override_way, remove_write_protected)) {
                 return FALSE;
             }
         }
-    }
-    else {
+    } else {
         struct stat dest_stat;
-        if(stat(dest, &dest_stat) == 0) {
+        if (stat(dest, &dest_stat) == 0) {
             int dlen = strlen(dest);
             char dest2[PATH_MAX];
             xstrncpy(dest2, dest, PATH_MAX);
 
-            if(dest2[dlen-1] == '/') { dest2[dlen-1] = 0; }  // remove / of last character for system calls
+            if (dest2[dlen - 1] == '/') { dest2[dlen - 1] = 0; } // remove / of last character for system calls
 
             /// dest is directory ///
-            if(S_ISDIR(dest_stat.st_mode)) {
-                if(!copy_file_into_directory(source2, &source_stat, dest2, move, preserve, log, err_num, override_way, remove_write_protected)) {
+            if (S_ISDIR(dest_stat.st_mode)) {
+                if (!copy_file_into_directory(source2, &source_stat, dest2, move, preserve, log, err_num, override_way, remove_write_protected)) {
                     return FALSE;
                 }
             }
             /// dest is file ///
             else {
-                if(!rename_copy(source2, &source_stat, dest2, move, preserve, log, err_num, override_way, remove_write_protected)) {
+                if (!rename_copy(source2, &source_stat, dest2, move, preserve, log, err_num, override_way, remove_write_protected)) {
                     return FALSE;
                 }
             }
@@ -1025,101 +951,94 @@ BOOL copy_file(char* source, char* dest, BOOL move, BOOL preserve, enum eCopyOve
     return TRUE;
 }
 
-static BOOL remove_regular_file(char* path, BOOL no_ctrl_c, BOOL message, enum eRemoveWriteProtected* remove_write_protected, int* err_num, FILE* log, struct stat* stat_)
-{
-    if(!(stat_->st_mode&S_IWUSR) && !(stat_->st_mode&S_IWGRP) && !(stat_->st_mode&S_IWOTH) ) {
-        if(*remove_write_protected == kWPNoAll) {
+static BOOL remove_regular_file(char *path, BOOL no_ctrl_c, BOOL message, enum eRemoveWriteProtected *remove_write_protected, int *err_num, FILE *log, struct stat *stat_) {
+    if (!(stat_->st_mode & S_IWUSR) && !(stat_->st_mode & S_IWGRP) && !(stat_->st_mode & S_IWOTH)) {
+        if (*remove_write_protected == kWPNoAll) {
             return TRUE;
-        }
-        else if(*remove_write_protected == kWPYesAll) {
-        }
-        else {
-            const char* str[] = {
-                "No", "Yes", "No(all)", "Yes(all)", "Cancel"
-            };
-            
-            char buf[PATH_MAX+20];
-            snprintf(buf, PATH_MAX+20, "remove write-protected file(%s)", path);
-            int ret = select_str2(buf, (char**)str, 5, 4);
+        } else if (*remove_write_protected == kWPYesAll) {
+        } else {
+            const char *str[] = {
+                "No", "Yes", "No(all)", "Yes(all)", "Cancel"};
 
-            switch(ret) {
-                case 0:
-                    return TRUE;
+            char buf[PATH_MAX + 20];
+            snprintf(buf, PATH_MAX + 20, "remove write-protected file(%s)", path);
+            int ret = select_str2(buf, (char **)str, 5, 4);
 
-                case 1:
-                    break;
+            switch (ret) {
+            case 0:
+                return TRUE;
 
-                case 2:
-                    *remove_write_protected = kWPNoAll;
-                    return TRUE;
+            case 1:
+                break;
 
-                case 3:
-                    *remove_write_protected = kWPYesAll;
-                    break;
+            case 2:
+                *remove_write_protected = kWPNoAll;
+                return TRUE;
 
-                case 4:
-                    return FALSE;
+            case 3:
+                *remove_write_protected = kWPYesAll;
+                break;
 
-                default:
-                    break;
+            case 4:
+                return FALSE;
+
+            default:
+                break;
             }
         }
     }
 
     /// msg ///
-    if(message) {
-        char buf[PATH_MAX+20];
-        snprintf(buf, PATH_MAX+20, "deleting %s", path);
+    if (message) {
+        char buf[PATH_MAX + 20];
+        snprintf(buf, PATH_MAX + 20, "deleting %s", path);
         msg_nonstop("%s", buf);
     }
 
     /// remove it ///
-    if(unlink(path) < 0) {
-        switch(errno) {
-            case EACCES:
-            case EPERM:
-                fprintf(log, "can't remove. permission denied. (%s)\n", path);
-                (*err_num)++;
-                break;
+    if (unlink(path) < 0) {
+        switch (errno) {
+        case EACCES:
+        case EPERM:
+            fprintf(log, "can't remove. permission denied. (%s)\n", path);
+            (*err_num)++;
+            break;
 
-            case EROFS:
-                fprintf(log, "can't removepermission denied. (%s)\n", path);
-                (*err_num)++;
-                break;
+        case EROFS:
+            fprintf(log, "can't removepermission denied. (%s)\n", path);
+            (*err_num)++;
+            break;
 
-            default:
-                fprintf(log, "unlink err. (%s)\n", path);
-                (*err_num)++;
-                break;
+        default:
+            fprintf(log, "unlink err. (%s)\n", path);
+            (*err_num)++;
+            break;
         }
     }
 
     return TRUE;
 }
 
-static BOOL remove_directory_recursively(char* path, BOOL no_ctrl_c, BOOL message, enum eRemoveWriteProtected* remove_write_protected, int* err_num, FILE* log, struct stat* stat_)
-{
-    char buf[PATH_MAX+20];
-    snprintf(buf, PATH_MAX+20, "entering %s", path);
+static BOOL remove_directory_recursively(char *path, BOOL no_ctrl_c, BOOL message, enum eRemoveWriteProtected *remove_write_protected, int *err_num, FILE *log, struct stat *stat_) {
+    char buf[PATH_MAX + 20];
+    snprintf(buf, PATH_MAX + 20, "entering %s", path);
     msg_nonstop("%s", buf);
-    
-    DIR* dir = opendir(path);
-    if(dir == NULL) {
+
+    DIR *dir = opendir(path);
+    if (dir == NULL) {
         fprintf(log, "can't remove opendir err(%s)\n", path);
         (*err_num)++;
         return TRUE;
     }
-    struct dirent* entry;
-    while((entry = readdir(dir)) != 0) {
-        if(strcmp(entry->d_name, ".") != 0
-            && strcmp(entry->d_name, "..") != 0)
-        {
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != 0) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             char path2[PATH_MAX];
             xstrncpy(path2, path, PATH_MAX);
             xstrncat(path2, "/", PATH_MAX);
             xstrncat(path2, entry->d_name, PATH_MAX);
 
-            if(!remove_file(path2, no_ctrl_c, FALSE, err_num, log, remove_write_protected)) {
+            if (!remove_file(path2, no_ctrl_c, FALSE, err_num, log, remove_write_protected)) {
                 (void)closedir(dir);
                 return FALSE;
             }
@@ -1127,23 +1046,23 @@ static BOOL remove_directory_recursively(char* path, BOOL no_ctrl_c, BOOL messag
     }
     (void)closedir(dir);
 
-    if(rmdir(path) < 0) {
-        switch(errno) {
-            case EACCES:
-            case EPERM:
-                fprintf(log, "%s --> can't remove. permission denied.", path);
-                (*err_num)++;
-                break;
+    if (rmdir(path) < 0) {
+        switch (errno) {
+        case EACCES:
+        case EPERM:
+            fprintf(log, "%s --> can't remove. permission denied.", path);
+            (*err_num)++;
+            break;
 
-            case EROFS:
-                fprintf(log, "%s --> can't remove. file system is readonly.", path);
-                (*err_num)++;
-                break;
+        case EROFS:
+            fprintf(log, "%s --> can't remove. file system is readonly.", path);
+            (*err_num)++;
+            break;
 
-            default:
-                fprintf(log, "%s --> rmdir err.", path);
-                (*err_num)++;
-                break;
+        default:
+            fprintf(log, "%s --> rmdir err.", path);
+            (*err_num)++;
+            break;
         }
     }
 
@@ -1151,10 +1070,9 @@ static BOOL remove_directory_recursively(char* path, BOOL no_ctrl_c, BOOL messag
 }
 
 // path must be allocated with PATH_MAX size
-BOOL remove_file(char* path, BOOL no_ctrl_c, BOOL message, int* err_num, FILE* log, enum eRemoveWriteProtected* remove_write_protected)
-{
+BOOL remove_file(char *path, BOOL no_ctrl_c, BOOL message, int *err_num, FILE *log, enum eRemoveWriteProtected *remove_write_protected) {
     /// key input ? ///
-    if(!no_ctrl_c) {
+    if (!no_ctrl_c) {
         fd_set mask;
 
         FD_ZERO(&mask);
@@ -1165,12 +1083,12 @@ BOOL remove_file(char* path, BOOL no_ctrl_c, BOOL message, int* err_num, FILE* l
         tv.tv_usec = 0;
 
         select(1, &mask, NULL, NULL, &tv);
-    
-        if(FD_ISSET(0, &mask)) {
+
+        if (FD_ISSET(0, &mask)) {
             int meta;
             int key = xgetch(&meta);
 
-            if(key == 3 || key == 7 || key == 27) { // CTRL-C and CTRL-G
+            if (key == 3 || key == 7 || key == 27) { // CTRL-C and CTRL-G
                 return FALSE;
             }
         }
@@ -1179,26 +1097,23 @@ BOOL remove_file(char* path, BOOL no_ctrl_c, BOOL message, int* err_num, FILE* l
     /// cancel ///
     struct stat stat_;
 
-    if(lstat(path, &stat_) == 0) {
+    if (lstat(path, &stat_) == 0) {
         /// file ///
-        if(!S_ISDIR(stat_.st_mode)) {
-            if(!remove_regular_file(path, no_ctrl_c, message, remove_write_protected, err_num, log, &stat_)) {
+        if (!S_ISDIR(stat_.st_mode)) {
+            if (!remove_regular_file(path, no_ctrl_c, message, remove_write_protected, err_num, log, &stat_)) {
                 return FALSE;
             }
         }
         /// directory ///
         else {
-            if(!remove_directory_recursively(path, no_ctrl_c, message, remove_write_protected, err_num, log, &stat_)) 
-            {
+            if (!remove_directory_recursively(path, no_ctrl_c, message, remove_write_protected, err_num, log, &stat_)) {
                 return FALSE;
             }
         }
-    }
-    else {
+    } else {
         fprintf(log, "(%s) --> can't stat\n", path);
         (*err_num)++;
     }
 
     return TRUE;
 }
-
