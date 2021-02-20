@@ -1,19 +1,17 @@
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <termios.h>
+#include "config.h"
+
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wctype.h>
-#include <stdio.h>
-#include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <wchar.h>
-#include <errno.h>
+#include <sys/types.h>
+#include <termios.h>
 #include <unistd.h>
-
-#include "config.h"
+#include <wchar.h>
+#include <wctype.h>
 
 #if defined(HAVE_CURSES_H)
 #include <curses.h>
@@ -28,19 +26,16 @@
 #include <sys/time.h>
 #endif
 
-void termbuffer_init()
-{
+void termbuffer_init() {
 }
 
-void termbuffer_final()
-{
+void termbuffer_final() {
 }
 
-void xclear_immediately()
-{
+void xclear_immediately() {
 #if defined(__CYGWIN__)
     int y;
-    for(y=0; y<mgetmaxy(); y++) {
+    for (y = 0; y < mgetmaxy(); y++) {
         mclear_online(y);
     }
     refresh();
@@ -49,47 +44,42 @@ void xclear_immediately()
 #endif
 }
 
-void xclear()
-{
+void xclear() {
 #if defined(__CYGWIN__)
     int y;
-    for(y=0; y<mgetmaxy()-1; y++) {
+    for (y = 0; y < mgetmaxy() - 1; y++) {
         mclear_online(y);
     }
     mclear_lastline();
 #else
-    if(getenv("MFILER4_CLEAR_WAY")) {
+    if (getenv("MFILER4_CLEAR_WAY")) {
         int y;
-        for(y=0; y<mgetmaxy()-1; y++) {
+        for (y = 0; y < mgetmaxy() - 1; y++) {
             mclear_online(y);
         }
         mclear_lastline();
         //erase();
-    }
-    else {
+    } else {
         clear();
     }
 #endif
 }
 
-void xmove(int y, int x)
-{
-/*
+void xmove(int y, int x) {
+    /*
     gX = x;
     gY = y;
 */
 }
 
-void xmove_immediately(int y, int x)
-{
-/*
+void xmove_immediately(int y, int x) {
+    /*
     ttywrite(tparm(tigetstr("cup"), y, x));
 */
 }
 
-int xmvprintw_immediately(int y, int x, char* str, ...)
-{
-/*
+int xmvprintw_immediately(int y, int x, char *str, ...) {
+    /*
     char buf[BUFSIZ];
     int i;
 
@@ -106,9 +96,8 @@ int xmvprintw_immediately(int y, int x, char* str, ...)
 */
 }
 
-int xprintw_immediately(char* str, ...)
-{
-/*
+int xprintw_immediately(char *str, ...) {
+    /*
     char buf[BUFSIZ];
     int i;
 
@@ -123,9 +112,8 @@ int xprintw_immediately(char* str, ...)
 */
 }
 
-int xmvprintw(int y, int x, char* str, ...)
-{
-/*
+int xmvprintw(int y, int x, char *str, ...) {
+    /*
     char buf[BUFSIZ];
     int i;
     char* p;
@@ -232,9 +220,8 @@ int xmvprintw(int y, int x, char* str, ...)
 */
 }
 
-int xprintw(char* str, ...)
-{
-/*
+int xprintw(char *str, ...) {
+    /*
     char buf[BUFSIZ];
     wchar_t wbuf[BUFSIZ];
     wchar_t* wp;
@@ -339,17 +326,14 @@ int xprintw(char* str, ...)
 */
 }
 
-void xattron(int attrs)
-{
-/*
+void xattron(int attrs) {
+    /*
     gBufAttrNow = attrs;
 */
 }
 
-void xattroff()
-{
-/*
+void xattroff() {
+    /*
     gBufAttrNow = 0;
 */
 }
-
