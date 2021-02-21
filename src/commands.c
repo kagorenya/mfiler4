@@ -2065,7 +2065,7 @@ static void draw_progress_box(int mark_num) {
 // fclose(log);
 static BOOL ready_for_logging(FILE **log) {
     char log_path[PATH_MAX];
-    snprintf(log_path, PATH_MAX, "%s/copy_file.log", gHomeDir);
+    snprintf(log_path, PATH_MAX, "%s/copy_file.log", gTempDir);
     *log = fopen(log_path, "w");
 
     if (*log == NULL) {
@@ -2074,7 +2074,7 @@ static BOOL ready_for_logging(FILE **log) {
     }
 
     fprintf(*log, "-+- the path failed with copying(%s/copy_file.log) -+-\n\n",
-            gHomeDir);
+            gTempDir);
 
     return TRUE;
 }
@@ -2087,14 +2087,14 @@ static BOOL finish_logging(FILE *log, int err_num) {
 
         if (mis_raw_mode()) {
             merr_msg("There is %d errors. see log with running less %s/copy_file.log",
-                     err_num, gHomeDir);
+                     err_num, gTempDir);
 
             endwin();
             mreset_tty();
 
             int rcode;
             char buf[1024];
-            snprintf(buf, 1024, "sys::less '%s/copy_file.log'", gHomeDir);
+            snprintf(buf, 1024, "sys::less '%s/copy_file.log'", gTempDir);
             (void)xyzsh_eval(&rcode, buf, "less", NULL, gStdin, gStdout, 0, NULL,
                              gMFiler4);
 
@@ -2102,11 +2102,11 @@ static BOOL finish_logging(FILE *log, int err_num) {
         } else {
             fprintf(stderr,
                     "There is %d errors. see log with running less %s/copy_file.log",
-                    err_num, gHomeDir);
+                    err_num, gTempDir);
 
             int rcode;
             char buf[1024];
-            snprintf(buf, 1024, "sys::cat '%s/copy_file.log'", gHomeDir);
+            snprintf(buf, 1024, "sys::cat '%s/copy_file.log'", gTempDir);
             (void)xyzsh_eval(&rcode, buf, "less", NULL, gStdin, gStdout, 0, NULL,
                              gMFiler4);
         }
@@ -2442,7 +2442,7 @@ BOOL cmd_mrm(sObject *nextin, sObject *nextout, sRunInfo *runinfo) {
 
     /// ready for the log file ///
     char log_path[PATH_MAX];
-    snprintf(log_path, PATH_MAX, "%s/rm_file.log", gHomeDir);
+    snprintf(log_path, PATH_MAX, "%s/rm_file.log", gTempDir);
     FILE *log = fopen(log_path, "w");
 
     fprintf(log, "-+- failed path of rm files -+-\n\n");
