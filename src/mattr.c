@@ -157,11 +157,11 @@ int main(int argc, char *argv[]) {
             printw("%s ", argv[i]);
         }
 
-        if (editing == kOK)
-            mvprintw(7, 0, "Write OK?(Y/n)");
-
         /// cursor ///
         switch (editing) {
+        case kOK:
+            mvprintw(7, 0, "Write OK?(Y/n)");
+            break;
         case kModeYesNo:
             move(4, 12);
             break;
