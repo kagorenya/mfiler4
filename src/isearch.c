@@ -177,7 +177,7 @@ static BOOL match_back(int start) {
                 }
 
                 /// 一文字だけの正規表現は重いのでキャッシュする
-                unsigned char *p5 = string_c_str(gInputFileName);
+                unsigned char *p5 = (unsigned char *)string_c_str(gInputFileName);
                 if (strlen((char *)p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
                     hash_put(gMigemoCache, string_c_str(gInputFileName), gReg);
                 }
@@ -311,7 +311,7 @@ static BOOL match_next(int start) {
                     }
 
                     /// 一文字だけの正規表現は重いのでキャッシュする
-                    unsigned char *p5 = string_c_str(gInputFileName);
+                    unsigned char *p5 = (unsigned char *)string_c_str(gInputFileName);
                     if (strlen((char *)p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
                         hash_put(gMigemoCache, string_c_str(gInputFileName), gReg);
                     }
