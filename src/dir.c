@@ -1,6 +1,8 @@
 #include "common.h"
 #include "config.h"
 
+#include <oniguruma.h>
+
 #if defined(HAVE_CURSES_H)
 #include <curses.h>
 #elif defined(HAVE_NCURSES_H)
@@ -165,7 +167,7 @@ void sDir_mask(sDir *self) {
             if (!S_ISDIR(file->mStat.st_mode) && strcmp(fname, ".index") != 0) {
                 OnigRegion *region = onig_region_new();
 
-                int r2 = onig_search(self->mMaskReg, fname, fname + strlen(fname), fname, fname + strlen(fname), region, ONIG_OPTION_IGNORECASE);
+                int r2 = onig_search(self->mMaskReg, (OnigUChar *)fname, (OnigUChar *)fname + strlen(fname), (OnigUChar *)fname, (OnigUChar *)fname + strlen(fname), region, ONIG_OPTION_IGNORECASE);
 
                 if (r2 < 0) {
                     sFile *f = vector_item(self->mFiles, i);
