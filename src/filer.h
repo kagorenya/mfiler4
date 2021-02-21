@@ -2,6 +2,8 @@
 #define FILER_H
 
 #include <oniguruma.h>
+#include <sys/stat.h>
+#include <xyzsh/xyzsh.h>
 
 ///////////////////////////////////////////////////
 // sFile -- ファイルオブジェクト

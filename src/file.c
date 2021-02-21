@@ -88,7 +88,7 @@ void override_check_box_view() {
 }
 
 static void copy_timestamp_and_permission(char *dpath, struct stat *source_stat, BOOL preserve, FILE *log, int *err_num) {
-    if (preserve || move) {
+    if (preserve || &move) {
         if (getuid() == 0) {
             if (chown(dpath, source_stat->st_uid, source_stat->st_gid) < 0) {
                 fprintf(log, "owner of %s\n", dpath);

@@ -464,6 +464,7 @@ int input_box(char *msg, char *result, int result_size, char *def_input, int def
 }
 
 int input_box_on_readline(char *msg, char *result, int result_size, char *def_input, int def_cursor) {
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -559,6 +560,7 @@ finished:
 }
 
 int select_str_on_readline(char *msg, char *str[], int len, int cancel) {
+    return 0;
 }
 
 int select_str2(char *msg, char *str[], int len, int cancel) {

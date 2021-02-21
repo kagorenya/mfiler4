@@ -553,11 +553,11 @@ static void set_mfenv() {
     snprintf(buf, 128, "%d", 1);
     setenv("meta", buf, 1);
 #if !defined(__DARWIN__)
-    snprintf(buf, 128, "%ld", A_REVERSE);
+    snprintf(buf, 128, "%u", A_REVERSE);
     setenv("ma_reverse", buf, 1);
-    snprintf(buf, 128, "%ld", A_BOLD);
+    snprintf(buf, 128, "%u", A_BOLD);
     setenv("ma_bold", buf, 1);
-    snprintf(buf, 128, "%ld", A_UNDERLINE);
+    snprintf(buf, 128, "%u", A_UNDERLINE);
     setenv("ma_underline", buf, 1);
 #else
     snprintf(buf, 128, "%d", A_REVERSE);

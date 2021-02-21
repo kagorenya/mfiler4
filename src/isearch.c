@@ -16,6 +16,8 @@ static regex_t *gReg;
 static sObject *gMigemoCache; // 一文字だけの正規表現のクェリーは重いのでキャッシュする
 #endif
 
+#include <ctype.h>
+
 static sObject *gInputFileName; // 入力された文字列
 
 ///////////////////////////////////////////////////
@@ -135,7 +137,7 @@ static BOOL match_back(int start) {
     } else if (string_c_str(gInputFileName)[0] != 0) {
         /// get reg ///
         if (gReg == NULL) {
-            regex_t *reg = hash_item(gMigemoCache, (unsigned char *)string_c_str(gInputFileName));
+            regex_t *reg = hash_item(gMigemoCache, string_c_str(gInputFileName));
             if (reg) {
                 gReg = reg;
             } else {
@@ -147,9 +149,9 @@ static BOOL match_back(int start) {
                 int r;
                 OnigErrorInfo err_info;
 
-                OnigUChar *p2 = MALLOC(sizeof(char) * strlen(p) * 2);
-                char *p3 = p2;
-                char *p4 = p;
+                OnigUChar *p2 = MALLOC(sizeof(char) * strlen((char *)p) * 2);
+                char *p3 = (char *)p2;
+                char *p4 = (char *)p;
                 while (*p) {
                     if (*p == '+') {
                         *p3++ = '\\';
@@ -175,9 +177,9 @@ static BOOL match_back(int start) {
                 }
 
                 /// 一文字だけの正規表現は重いのでキャッシュする
-                unsigned char *p5 = string_c_str(gInputFileName);
-                if (strlen(p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
-                    hash_put(gMigemoCache, (unsigned char *)string_c_str(gInputFileName), gReg);
+                unsigned char *p5 = (unsigned char *)string_c_str(gInputFileName);
+                if (strlen((char *)p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
+                    hash_put(gMigemoCache, string_c_str(gInputFileName), gReg);
                 }
             }
         }
@@ -268,7 +270,7 @@ static BOOL match_next(int start) {
         } else {
             /// get reg ///
             if (gReg == NULL) {
-                regex_t *reg = hash_item(gMigemoCache, (unsigned char *)string_c_str(gInputFileName));
+                regex_t *reg = hash_item(gMigemoCache, string_c_str(gInputFileName));
                 if (reg) {
                     gReg = reg;
                 } else {
@@ -277,9 +279,9 @@ static BOOL match_next(int start) {
                         return FALSE;
                     }
 
-                    OnigUChar *p2 = MALLOC(strlen(p) * 2);
-                    char *p3 = p2;
-                    char *p4 = p;
+                    OnigUChar *p2 = MALLOC(strlen((char *)p) * 2);
+                    char *p3 = (char *)p2;
+                    char *p4 = (char *)p;
                     while (*p4) {
                         if (*p4 == '+') {
                             *p3++ = '\\';
@@ -309,9 +311,9 @@ static BOOL match_next(int start) {
                     }
 
                     /// 一文字だけの正規表現は重いのでキャッシュする
-                    unsigned char *p5 = string_c_str(gInputFileName);
-                    if (strlen(p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
-                        hash_put(gMigemoCache, (unsigned char *)string_c_str(gInputFileName), gReg);
+                    unsigned char *p5 = (unsigned char *)string_c_str(gInputFileName);
+                    if (strlen((char *)p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
+                        hash_put(gMigemoCache, string_c_str(gInputFileName), gReg);
                     }
                 }
             }
