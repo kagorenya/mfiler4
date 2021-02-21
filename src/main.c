@@ -758,7 +758,7 @@ int main(int argc, char *argv[]) {
     }
 
     /// save mfiler4 temporary directory ///
-    snprintf(gTempDir, PATH_MAX, "%s/temp", gHomeDir);
+    snprintf(gTempDir, PATH_MAX, "%s/tmp", gHomeDir);
     if (access(gTempDir, F_OK) != 0) {
         if (mkdir(gTempDir, 0700) < 0) {
             fprintf(stderr, "can't mkdir %s", gTempDir);
