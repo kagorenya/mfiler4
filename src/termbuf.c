@@ -95,6 +95,7 @@ int xmvprintw_immediately(int y, int x, char *str, ...) {
 
     return i;
 */
+    return 0;
 }
 
 int xprintw_immediately(char *str, ...) {
@@ -111,6 +112,7 @@ int xprintw_immediately(char *str, ...) {
 
     return i;
 */
+    return 0;
 }
 
 int xmvprintw(int y, int x, char *str, ...) {
@@ -219,6 +221,7 @@ int xmvprintw(int y, int x, char *str, ...) {
 
     return i;
 */
+    return 0;
 }
 
 int xprintw(char *str, ...) {
@@ -325,6 +328,7 @@ int xprintw(char *str, ...) {
 
     return i;
 */
+    return 0;
 }
 
 void xattron(int attrs) {

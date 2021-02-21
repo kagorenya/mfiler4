@@ -2454,4 +2454,6 @@ BOOL filer_dotdir_mask(int dir) {
     if (dir2) {
         return dir2->mDotDirMask;
     }
+
+    return TRUE;
 }

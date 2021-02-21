@@ -219,6 +219,8 @@ int convert_fname2(char *src, char *des, int des_size) {
         }
     }
     *p2 = 0;
+
+    return 0;
 }
 
 int sDir_read(sDir *self) {
