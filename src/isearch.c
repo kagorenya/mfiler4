@@ -16,6 +16,8 @@ static regex_t *gReg;
 static sObject *gMigemoCache; // 一文字だけの正規表現のクェリーは重いのでキャッシュする
 #endif
 
+#include <ctype.h>
+
 static sObject *gInputFileName; // 入力された文字列
 
 ///////////////////////////////////////////////////

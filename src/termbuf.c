@@ -1,3 +1,4 @@
+#include "common.h"
 #include "config.h"
 
 #include <errno.h>
