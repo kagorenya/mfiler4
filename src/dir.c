@@ -352,7 +352,7 @@ int sDir_read(sDir *self) {
         }
 
         struct dirent *entry;
-        while (entry = readdir(dir)) {
+        while ((entry = readdir(dir))) {
             char fname[4089];
             if (convert_fname(entry->d_name, fname, 4089) == -1) {
                 continue;
