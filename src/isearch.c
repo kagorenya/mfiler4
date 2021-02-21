@@ -137,7 +137,7 @@ static BOOL match_back(int start) {
     } else if (string_c_str(gInputFileName)[0] != 0) {
         /// get reg ///
         if (gReg == NULL) {
-            regex_t *reg = hash_item(gMigemoCache, (unsigned char *)string_c_str(gInputFileName));
+            regex_t *reg = hash_item(gMigemoCache, string_c_str(gInputFileName));
             if (reg) {
                 gReg = reg;
             } else {
@@ -179,7 +179,7 @@ static BOOL match_back(int start) {
                 /// 一文字だけの正規表現は重いのでキャッシュする
                 unsigned char *p5 = string_c_str(gInputFileName);
                 if (strlen((char *)p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
-                    hash_put(gMigemoCache, (unsigned char *)string_c_str(gInputFileName), gReg);
+                    hash_put(gMigemoCache, string_c_str(gInputFileName), gReg);
                 }
             }
         }
@@ -270,7 +270,7 @@ static BOOL match_next(int start) {
         } else {
             /// get reg ///
             if (gReg == NULL) {
-                regex_t *reg = hash_item(gMigemoCache, (unsigned char *)string_c_str(gInputFileName));
+                regex_t *reg = hash_item(gMigemoCache, string_c_str(gInputFileName));
                 if (reg) {
                     gReg = reg;
                 } else {
@@ -313,7 +313,7 @@ static BOOL match_next(int start) {
                     /// 一文字だけの正規表現は重いのでキャッシュする
                     unsigned char *p5 = string_c_str(gInputFileName);
                     if (strlen((char *)p5) == 1 && *p5 >= 'A' && *p5 <= 'z') {
-                        hash_put(gMigemoCache, (unsigned char *)string_c_str(gInputFileName), gReg);
+                        hash_put(gMigemoCache, string_c_str(gInputFileName), gReg);
                     }
                 }
             }
