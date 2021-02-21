@@ -695,7 +695,7 @@ keycommand $keycode::F (
     )
 )
 
-print ~/.mfiler4/tmp | (
+print $MF4HOME/tmp | (
     | export MFILER4_TEMP
     | if(! | -d) (
         rm -rf $(|print)
