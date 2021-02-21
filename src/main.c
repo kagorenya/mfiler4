@@ -736,12 +736,20 @@ int main(int argc, char *argv[]) {
     setenv("MFILER4_DATAROOTDIR", DOCDIR, 1);
 
     /// save mfiler4 home directory ///
-    char *home = getenv("HOME");
+    char *home;
+    char *dirname;
+    if (getenv("XDG_CONFIG_HOME") != NULL) {
+        home = getenv("XDG_CONFIG_HOME");
+        dirname = "mfiler4";
+    } else {
+        home = getenv("HOME");
+        dirname = ".mfiler4";
+    }
     if (home == NULL) {
         fprintf(stderr, "$HOME is NULL.exit");
         exit(1);
     }
-    snprintf(gHomeDir, PATH_MAX, "%s/.mfiler4", home);
+    snprintf(gHomeDir, PATH_MAX, "%s/%s", home, dirname);
 
     if (access(gHomeDir, F_OK) != 0) {
         char buf[PATH_MAX];
